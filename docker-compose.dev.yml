@@ -40,6 +40,8 @@ services:
     environment:
       BOT_TOKEN: $DEVBOT_TOKEN
       DEV_CHAT_ID: $DEV_CHAT_ID
+      POLLING_INTERVAL: "0.2"
+      APP_SERVER: reminderbot
     depends_on: 
       - webserver
       - db 

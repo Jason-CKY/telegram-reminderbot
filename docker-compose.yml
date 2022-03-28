@@ -4,11 +4,9 @@ services:
   reminderbot:
     container_name: reminderbot
     image: jasoncky96/telegram-reminderbot:latest
-    container_name: reminderbot
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
     restart: always
     networks:
-      - ngrok-nginx-net
       - reminderbot
     environment:
       BOT_TOKEN: $BOT_TOKEN
@@ -34,6 +32,8 @@ services:
     environment:
       BOT_TOKEN: $BOT_TOKEN
       DEV_CHAT_ID: $DEV_CHAT_ID
+      POLLING_INTERVAL: "0.2"
+      APP_SERVER: reminderbot
     depends_on: 
       - webserver
       - db 

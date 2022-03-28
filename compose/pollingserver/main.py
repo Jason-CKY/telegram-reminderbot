@@ -20,7 +20,7 @@ def main():
             if len(updates) > 0:
                 print(json.dumps(updates, indent=4))
             for update in updates:
-                requests.post(f"http://reminderbot/{bot_token}", json=update)
+                requests.post(f'http://{os.environ.get("APP_SERVER")}/{bot_token}', json=update)
             OFFSET = max([update['update_id'] for update in updates]) + 1 if len(updates) > 0 else OFFSET
 
         time.sleep(polling_interval)

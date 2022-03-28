@@ -1,14 +1,14 @@
 import json, pymongo, logging, uuid, pytz, os
 from telegram.error import BadRequest
 from typing import List
-from datetime import datetime, time
+from datetime import datetime
 from starlette.status import HTTP_201_CREATED
 from app import utils, schemas
 from app.command_mappings import COMMANDS
 from app.scheduler import scheduler
 from app.database import get_db, Database
 from app.menu import ListReminderMenu, ReminderBuilder, RenewReminderMenu, SettingsMenu
-from app.constants import REMINDER_DAILY, REMINDER_MONTHLY, REMINDER_ONCE, REMINDER_WEEKLY, Bot, PUBLIC_URL, BOT_TOKEN, DEV_CHAT_ID, DEFAULT_SETTINGS_MESSAGE
+from app.constants import REMINDER_DAILY, REMINDER_MONTHLY, REMINDER_ONCE, REMINDER_WEEKLY, Bot, BOT_TOKEN, DEV_CHAT_ID, DEFAULT_SETTINGS_MESSAGE
 from fastapi import FastAPI, Request, Response, status, Depends, HTTPException
 from munch import Munch
 
