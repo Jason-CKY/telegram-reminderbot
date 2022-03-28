@@ -12,7 +12,7 @@ START_MESSAGE = f"This bot lets you set reminders! The following commands are av
                 f"/settings to set timezone.\n\n\n" +\
                 f"Note that all reminders set on this bot can be accessed by the user hosting this bot. Do not set any reminders that contain any sort of private information."
 
-SUPPORT_MESSAGE =   f"My source code is hosted on https://github.com/Jason-CKY/Telegram-Bots/tree/main. Consider \n" +\
+SUPPORT_MESSAGE =   f"My source code is hosted on https://github.com/Jason-CKY/telegram-reminderbot. Consider \n" +\
                     f"Post any issues with this bot on the github link, and feel free to contribute to the source code with a " +\
                     f"pull request."
 
