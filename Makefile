@@ -38,4 +38,3 @@ stop-reminderbot:
 	
 destroy:
 	docker-compose down -v
-	-docker volume rm telegram-reminderbot_reminderbot-db
