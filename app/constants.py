@@ -4,7 +4,7 @@ from telegram.ext import ExtBot
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 Bot = ExtBot(token=BOT_TOKEN)
 
-PUBLIC_URL = os.getenv('PUBLIC_URL')
+# PUBLIC_URL = os.getenv('PUBLIC_URL')
 
 START_MESSAGE = f"This bot lets you set reminders! The following commands are available:\n" +\
                 f"/remind sets a reminder.\n" +\

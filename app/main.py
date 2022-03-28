@@ -98,9 +98,8 @@ def shutdown_event():
 
 
 @app.get("/")
-def ngrok_url():
+def root():
     return {
-        "Ngrok url": PUBLIC_URL,
         "Bot Info": Bot.get_me().to_dict(),
         "scheduler.get_jobs()": [str(job) for job in scheduler.get_jobs()]
     }

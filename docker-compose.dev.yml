@@ -2,9 +2,10 @@ version: '3.7'
 
 services:
   reminderbot:
+    container_name: reminderbot
     build:
       context: .
-      dockerfile: ./compose/Dockerfile
+      dockerfile: ./compose/webserver/Dockerfile
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
     restart: always
     ports:
@@ -12,7 +13,6 @@ services:
     networks:
       - reminderbot
     environment:
-      NGROK: ngrok-container
       MODE: DEBUG
       BOT_TOKEN: $DEVBOT_TOKEN
       DEV_CHAT_ID: $DEV_CHAT_ID
@@ -29,8 +29,24 @@ services:
     depends_on: 
       - db 
 
+  reminderbot_pollserver:
+    container_name: reminderbot_pollserver
+    build:
+      context: .
+      dockerfile: ./compose/pollingserver/Dockerfile
+    restart: always
+    networks:
+      - reminderbot
+    environment:
+      BOT_TOKEN: $DEVBOT_TOKEN
+      DEV_CHAT_ID: $DEV_CHAT_ID
+    depends_on: 
+      - webserver
+      - db 
+
   db:
     image: mongo:4.4.9-focal
+    container_name: reminderbot_db
     restart: always
     ports:
       - 27017:27017
@@ -46,6 +62,8 @@ services:
 
 volumes:
   reminderbot-db:
+    driver: local
+    name: telegram-reminderbot_reminderbot-db
 
 networks:
   reminderbot:

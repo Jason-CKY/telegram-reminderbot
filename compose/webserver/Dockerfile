@@ -10,13 +10,9 @@ RUN groupadd --gid 1000 fastapi \
   && useradd --uid 1000 --gid fastapi --shell /bin/bash --create-home fastapi \
   && chown fastapi:fastapi /code
 
-COPY ./app/requirements.txt /code/requirements.txt
+COPY ./compose/webserver/requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-COPY --chown=fastapi:fastapi ./compose/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-COPY ./app /code/app
 
 USER fastapi
 
