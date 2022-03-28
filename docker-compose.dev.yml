@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+  reminderbot:
+    build:
+      context: .
+      dockerfile: ./compose/Dockerfile
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+    restart: always
+    ports:
+      - 8055:80
+    networks:
+      - reminderbot
+    environment:
+      NGROK: ngrok-container
+      MODE: DEBUG
+      BOT_TOKEN: $DEVBOT_TOKEN
+      DEV_CHAT_ID: $DEV_CHAT_ID
+
+      MONGO_USERNAME: $MONGO_USERNAME
+      MONGO_PASSWORD: $MONGO_PASSWORD
+      MONGO_DB: $MONGO_DB
+      MONGO_SERVER: db
+      MONGO_PORT: 27017    
+    volumes:
+      - type: bind
+        source: ./app
+        target: /code/app
+    depends_on: 
+      - db 
+
+  db:
+    image: mongo:4.4.9-focal
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_PASSWORD
+    volumes:
+      - type: volume
+        source: reminderbot-db
+        target: /data/db
+    networks:
+      - reminderbot
+
+volumes:
+  reminderbot-db:
+
+networks:
+  reminderbot:

@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  reminderbot:
+    image: jasoncky96/telegram-reminderbot:latest
+    container_name: reminderbot
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+    restart: always
+    networks:
+      - ngrok-nginx-net
+      - reminderbot
+    environment:
+      NGROK: ngrok-container
+      BOT_TOKEN: $BOT_TOKEN
+      MODE: PRODUCTION
+      DEV_CHAT_ID: $DEV_CHAT_ID
+      
+      MONGO_USERNAME: $MONGO_USERNAME
+      MONGO_PASSWORD: $MONGO_PASSWORD
+      MONGO_DB: $MONGO_DB
+      MONGO_SERVER: db
+      MONGO_PORT: 27017    
+    depends_on: 
+      - db 
+
+  db:
+    image: mongo:4.4.9-focal
+    container_name: reminderbot_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_PASSWORD
+    volumes:
+      - type: volume
+        source: reminderbot-db
+        target: /data/db
+    networks:
+      - reminderbot
+
+volumes:
+  reminderbot-db:
+
+networks:
+  reminderbot:
+  ngrok-nginx-net:
+    external: true
