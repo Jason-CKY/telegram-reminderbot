@@ -43,7 +43,7 @@ services:
       POLLING_INTERVAL: "0.2"
       APP_SERVER: reminderbot
     depends_on: 
-      - webserver
+      - reminderbot
       - db 
 
   db:

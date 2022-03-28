@@ -23,9 +23,7 @@ services:
 
   reminderbot_pollserver:
     container_name: reminderbot_pollserver
-    build:
-      context: .
-      dockerfile: ./compose/pollingserver/Dockerfile
+    image: jasoncky96/telegram-pollingserver:latest
     restart: always
     networks:
       - reminderbot
@@ -35,7 +33,7 @@ services:
       POLLING_INTERVAL: "0.2"
       APP_SERVER: reminderbot
     depends_on: 
-      - webserver
+      - reminderbot
       - db 
 
   db:

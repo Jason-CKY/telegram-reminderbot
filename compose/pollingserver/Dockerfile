@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./compose/pollingserver/main.py /code/main.py
 
+RUN chown -R python:python /code/
+
 USER python
 
 CMD ["python", "-u", "main.py"]
