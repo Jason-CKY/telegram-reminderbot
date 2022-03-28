@@ -24,7 +24,7 @@ start-dev:
 
 build-reminderbot:
 	docker build --tag jasoncky96/telegram-reminderbot:latest -f ./compose/webserver/Dockerfile .
-	docker build --tag jasoncky96/telegram-pollingserver:latest -f ./compose/webserver/Dockerfile .
+	docker build --tag jasoncky96/telegram-pollingserver:latest -f ./compose/pollingserver/Dockerfile .
 
 deploy-pollingserver:
 	docker buildx build --push --tag jasoncky96/telegram-pollingserver:latest --file ./compose/pollingserver/Dockerfile --platform linux/arm/v7,linux/arm64/v8,linux/amd64 .
