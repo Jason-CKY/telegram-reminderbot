@@ -221,8 +221,8 @@ async def respond(request: Request,
     try:
         req = await request.body()
         update = Munch.fromDict(json.loads(req))
-        # if os.environ['MODE'] == 'DEBUG':
-        utils.write_json(update, f"/code/app/output.json")
+        if os.environ['MODE'] == 'DEBUG':
+            utils.write_json(update, f"/code/app/output.json")
 
         if 'message' in update:
             database = Database(update.message.chat.id, db)

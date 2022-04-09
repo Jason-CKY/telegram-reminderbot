@@ -9,7 +9,6 @@ from app.database import Database
 def start(update: Munch, database: Database) -> None:
     '''
     Send START_MESSAGE (str) on the /start command,
-    TODO: if no settings are found for current user, initiate the process to change settings
     '''
     Bot.send_message(update.message.chat.id, START_MESSAGE)
 
@@ -26,6 +25,8 @@ def remind(update: Munch, database: Database) -> None:
     Send a message to prompt for reminder text with a force reply.
     Inline keyboard to cancel command.
     '''
+    database.update_chat_settings(update_settings=False)
+    database.delete_reminder_in_construction(update.message['from'].id)
     database.add_reminder_to_construction(update.message['from'].id)
     message = "Please enter reminder text. This bot allows for image reminders as well. Just attach an image and put your reminder text as the caption."
     Bot.send_message(update.message.chat.id,
