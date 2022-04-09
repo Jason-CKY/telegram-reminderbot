@@ -1,9 +1,10 @@
+from calendar import month_name
 import pytz, uuid
 from munch import Munch
 from datetime import datetime, timedelta, time
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, ForceReply
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-from app.constants import DAY_OF_WEEK, REMINDER_ONCE, REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY
+from app.constants import DAY_OF_WEEK, REMINDER_ONCE, REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY, REMINDER_YEARLY
 from app import utils
 from app.scheduler import scheduler
 from app.constants import Bot
@@ -26,9 +27,11 @@ class ReminderBuilder:
             reminder_in_construction['time'], timezone)
 
         current_datetime = pytz.utc.localize(datetime.now())
+        min_date = utils.calculate_date(
+            current_datetime, reminder_time)
+        
         result, key, step = DetailedTelegramCalendar(
-            min_date=utils.calculate_date(
-                current_datetime, reminder_time)).process(callback_query.data)
+            min_date=min_date).process(callback_query.data)
         if not result and key:
             Bot.edit_message_text(f"Select {LSTEP[step]}",
                                   callback_query.message.chat.id,
@@ -43,9 +46,13 @@ class ReminderBuilder:
                 datetime.strptime(f"{result}, {reminder_time}",
                                   "%Y-%m-%d, %H:%M")).astimezone(
                                       pytz.utc).strftime('%Y-%m-%d')
+
+            reminder = self.database.get_reminder_in_construction(callback_query['from'].id)
+
             self.database.update_reminder_in_construction(
                 callback_query['from'].id,
-                frequency=" ".join([REMINDER_ONCE, _date]))
+                frequency=" ".join([REMINDER_ONCE, _date]) if reminder['frequency'] != REMINDER_YEARLY else f"{REMINDER_YEARLY}-{result}"
+            )
             utils.create_reminder(callback_query.message.chat.id,
                                   callback_query['from'].id, self.database)
             self.database.delete_reminder_in_construction(
@@ -53,7 +60,8 @@ class ReminderBuilder:
 
     def process_message(self, update: Munch) -> None:
         # any text received by bot with no entry in self.database is treated as reminder text
-        if self.database.is_reminder_text_in_construction(update.message['from'].id):
+        if self.database.is_reminder_text_in_construction(
+                update.message['from'].id):
             if 'file_id' in update.message:
                 self.database.update_reminder_in_construction(
                     update.message['from'].id,
@@ -64,20 +72,22 @@ class ReminderBuilder:
                     update.message['from'].id,
                     reminder_text=update.message.text)
             if 'from' in update:
-                Bot.send_message(update.message.chat.id,
-                                f"@{update.message['from'].username} enter reminder time in <HH>:<MM> format.",
-                                reply_markup=ForceReply(selective=True))
+                Bot.send_message(
+                    update.message.chat.id,
+                    f"@{update.message['from'].username} enter reminder time in <HH>:<MM> format.",
+                    reply_markup=ForceReply(selective=True))
             else:
-                Bot.send_message(update.message.chat.id,
-                                "enter reminder time in <HH>:<MM> format.",
-                                reply_to_message_id=update.message.message_id,
-                                reply_markup=ReplyKeyboardMarkup(
-                                    resize_keyboard=True,
-                                    one_time_keyboard=True,
-                                    selective=True,
-                                    input_field_placeholder=
-                                    "enter reminder time in <HH>:<MM> format.",
-                                    keyboard=[[KeyboardButton("🚫 Cancel")]]))
+                Bot.send_message(
+                    update.message.chat.id,
+                    "enter reminder time in <HH>:<MM> format.",
+                    reply_to_message_id=update.message.message_id,
+                    reply_markup=ReplyKeyboardMarkup(
+                        resize_keyboard=True,
+                        one_time_keyboard=True,
+                        selective=True,
+                        input_field_placeholder=
+                        "enter reminder time in <HH>:<MM> format.",
+                        keyboard=[[KeyboardButton("🚫 Cancel")]]))
         # reminder text -> reminder time -> reminder frequency -> reminder set.
         elif self.database.is_reminder_time_in_construction(
                 update.message['from'].id):
@@ -106,7 +116,11 @@ class ReminderBuilder:
                                   [
                                       KeyboardButton(REMINDER_WEEKLY),
                                       KeyboardButton(REMINDER_MONTHLY)
-                                  ], [KeyboardButton("🚫 Cancel")]]))
+                                  ],
+                                  [
+                                      KeyboardButton(REMINDER_YEARLY),
+                                      KeyboardButton("🚫 Cancel")
+                                  ]]))
             else:
                 # send error message
                 Bot.send_message(
@@ -133,7 +147,7 @@ class ReminderBuilder:
                     message="once-off reminder selected.",
                     reply_to_message=True)
                 self.database.update_reminder_in_construction(
-                    update.message['from'].id, frequency=REMINDER_ONCE)
+                    update.message['from'].id, frequency=update.message.text)
                 reminder = self.database.get_reminder_in_construction(
                     update.message['from'].id)
                 timezone = self.database.query_for_timezone()
@@ -144,6 +158,7 @@ class ReminderBuilder:
                         utils.convert_time_str(
                             reminder['time'],
                             self.database.query_for_timezone())))
+            
             elif update.message.text == REMINDER_DAILY:
                 self.database.update_reminder_in_construction(
                     update.message['from'].id, frequency=REMINDER_DAILY)
@@ -196,6 +211,24 @@ class ReminderBuilder:
                     reply_to_message_id=update.message.message_id,
                 )
 
+            elif update.message.text == REMINDER_YEARLY:
+                utils.remove_reply_keyboard_markup(
+                    update,
+                    message="yearly reminder selected.",
+                    reply_to_message=True)
+                self.database.update_reminder_in_construction(
+                    update.message['from'].id, frequency=update.message.text)
+                reminder = self.database.get_reminder_in_construction(
+                    update.message['from'].id)
+                timezone = self.database.query_for_timezone()
+                utils.show_calendar(
+                    update,
+                    min_date=utils.calculate_date(
+                        pytz.utc.localize(datetime.now()),
+                        utils.convert_time_str(
+                            reminder['time'],
+                            self.database.query_for_timezone())))
+
             elif reminder['frequency'] == REMINDER_WEEKLY or reminder[
                     'frequency'] == REMINDER_MONTHLY:
                 if utils.is_valid_frequency(reminder['frequency'],
@@ -224,7 +257,6 @@ class ReminderBuilder:
                     error_message = "Invalid day of week [1-7]" if reminder[
                         'frequency'] == REMINDER_WEEKLY else "Invalid day of month [1-31]"
                     Bot.send_message(update.message.chat.id, error_message)
-
 
 
 class ListReminderMenu:
@@ -256,18 +288,37 @@ class ListReminderMenu:
                 _frequency = f"everyday"
             elif reminder['frequency'].split('-')[0] == REMINDER_WEEKLY:
                 day_of_week = int(reminder['frequency'].split('-')[1]) - 1
-                hour, minute = [int(t) for t in utils.convert_time_str(f"{reminder['time']}", reminder['timezone']).split(":")]
-                run_date = datetime.combine(datetime.today(), time(hour, minute)).replace(day=20) # middle of the month so that the next calculation won't end with negative day
-                run_date = run_date.replace(day=run_date.day - (run_date.weekday() - day_of_week))
-                run_date = pytz.timezone(reminder['timezone']).localize(run_date).astimezone(pytz.timezone(timezone))
+                hour, minute = [
+                    int(t) for t in utils.convert_time_str(
+                        f"{reminder['time']}", reminder['timezone']).split(":")
+                ]
+                run_date = datetime.combine(datetime.today(
+                ), time(hour, minute)).replace(
+                    day=20
+                )  # middle of the month so that the next calculation won't end with negative day
+                run_date = run_date.replace(day=run_date.day -
+                                            (run_date.weekday() - day_of_week))
+                run_date = pytz.timezone(
+                    reminder['timezone']).localize(run_date).astimezone(
+                        pytz.timezone(timezone))
                 day_of_week = run_date.strftime('%A')
                 _frequency = f"every {day_of_week}"
             elif reminder['frequency'].split('-')[0] == REMINDER_MONTHLY:
                 day_of_month = reminder['frequency'].split('-')[1]
-                hour, minute = [int(t) for t in utils.convert_time_str(f"{reminder['time']}", reminder['timezone']).split(":")]
-                day_of_month = pytz.timezone(reminder['timezone']).localize(datetime.now().replace(month=1, day=int(day_of_month), hour=hour, minute=minute)).astimezone(pytz.timezone(timezone)).day
+                hour, minute = [
+                    int(t) for t in utils.convert_time_str(
+                        f"{reminder['time']}", reminder['timezone']).split(":")
+                ]
                 day_of_month = utils.parse_day_of_month(str(day_of_month))
                 _frequency = f"{day_of_month} of every month"
+            elif reminder['frequency'].split('-')[0] == REMINDER_YEARLY:
+                _, month, day_of_month = [int(num) for num in reminder['frequency'].split('-')[1:]]
+                hour, minute = [
+                    int(t) for t in utils.convert_time_str(
+                        f"{reminder['time']}", reminder['timezone']).split(":")
+                ]
+                day_of_month = utils.parse_day_of_month(str(day_of_month))
+                _frequency = f"{day_of_month} {month_name[month]} every year"
 
             reminder['printed_frequency'] = _frequency
             reminder_texts.append(reminder)
@@ -294,10 +345,10 @@ class ListReminderMenu:
             return self.back_to_list("😐 Reminder not found found.")
         if reminder['file_id'] is None:
             return self.back_to_list("😐 Reminder has no image")
-        
+
         Bot.send_photo(self.chat_id, photo=reminder['file_id'])
         return self.get_reminder_menu(reminder_num)
-        
+
     def back_to_list(self,
                      message: str) -> Tuple[str, InlineKeyboardMarkup, str]:
         return message, InlineKeyboardMarkup([[
@@ -327,7 +378,7 @@ class ListReminderMenu:
         try:
             reminder = self.get_reminders()[reminder_num - 1]
         except IndexError:
-            return self.back_to_list("😐 Reminder not found found.")
+            return self.back_to_list("😐 Reminder not found.")
 
         timezone = self.database.query_for_timezone()
         next_trigger_time = scheduler.get_job(
@@ -343,10 +394,18 @@ class ListReminderMenu:
         message += f"{reminder['printed_frequency']} at {utils.convert_time_str(reminder['time'], self.database.query_for_timezone())}"
 
         inline_buttons = []
-        inline_buttons.append([InlineKeyboardButton(text="Delete", callback_data=f"lr_delete_{reminder_num}")])
+        inline_buttons.append([
+            InlineKeyboardButton(text="Delete",
+                                 callback_data=f"lr_delete_{reminder_num}")
+        ])
         if 'file_id' in reminder.keys():
-            inline_buttons[0].append(InlineKeyboardButton(text="View image", callback_data=f"lr_image_{reminder_num}"))
-        inline_buttons.append([InlineKeyboardButton(text="Back to list", callback_data="lr_page_1")])
+            inline_buttons[0].append(
+                InlineKeyboardButton(text="View image",
+                                     callback_data=f"lr_image_{reminder_num}"))
+        inline_buttons.append([
+            InlineKeyboardButton(text="Back to list",
+                                 callback_data="lr_page_1")
+        ])
         markup = InlineKeyboardMarkup(inline_buttons)
         return message, markup, "html"
 
@@ -514,33 +573,35 @@ class RenewReminderMenu:
         if _time == '15m':
             return self.renew_reminder(minutes=15,
                                        reminder_text=reminder_text,
-                                       from_user_id = from_user_id,
+                                       from_user_id=from_user_id,
                                        file_id=file_id)
         elif _time == '30m':
             return self.renew_reminder(minutes=30,
                                        reminder_text=reminder_text,
-                                       from_user_id = from_user_id,
+                                       from_user_id=from_user_id,
                                        file_id=file_id)
         elif _time == '1h':
             return self.renew_reminder(minutes=60,
                                        reminder_text=reminder_text,
-                                       from_user_id = from_user_id,
+                                       from_user_id=from_user_id,
                                        file_id=file_id)
         elif _time == '3h':
             return self.renew_reminder(minutes=180,
                                        reminder_text=reminder_text,
-                                       from_user_id = from_user_id,
+                                       from_user_id=from_user_id,
                                        file_id=file_id)
         elif _time == '1d':
             return self.renew_reminder(minutes=24 * 60,
                                        reminder_text=reminder_text,
-                                       from_user_id = from_user_id,
+                                       from_user_id=from_user_id,
                                        file_id=file_id)
         elif _time == 'time':
             callback_query.message['from'] = callback_query['from']
-            message = callback_query.message.text[:-len(self.REMIND_AGAIN_TEXT)]
+            message = callback_query.message.text[:-len(self.REMIND_AGAIN_TEXT
+                                                        )]
             callback_query.message.text = message[1:]
-            self.database.add_reminder_to_construction(callback_query.message['from'].id)
+            self.database.add_reminder_to_construction(
+                callback_query.message['from'].id)
             ReminderBuilder(self.database).process_message(callback_query)
             return message, None, None
 

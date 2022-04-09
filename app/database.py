@@ -60,7 +60,8 @@ class Database:
         Returns the chat query with messages that contains the given reminder id. By right this should only
         return a list of 1 entry as job ids are unique to each job, but return the entire query regardless
         '''
-        query = list(self.chat_collection.find({"reminders.reminder_id": reminder_id}))
+        query = list(
+            self.chat_collection.find({"reminders.reminder_id": reminder_id}))
         if len(query) == 0:
             raise AssertionError("No such job exists in this chat")
         return query
@@ -103,7 +104,10 @@ class Database:
 
     def get_reminder_in_construction(self, from_user_id: int) -> list:
         reminders_in_construction = self.query_for_reminders_in_construction()
-        reminder_in_construction = [r for r in reminders_in_construction if r['user_id'] == from_user_id]
+        reminder_in_construction = [
+            r for r in reminders_in_construction
+            if r['user_id'] == from_user_id
+        ]
         if reminder_in_construction == []:
             return []
         return reminder_in_construction[0]
@@ -111,6 +115,7 @@ class Database:
     '''
     Boolean functions
     '''
+
     def is_reminder_text_in_construction(self, from_user_id: int) -> bool:
         reminder_in_construction = self.get_reminder_in_construction(
             from_user_id)

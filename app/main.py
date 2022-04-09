@@ -38,17 +38,17 @@ def callback_query_handler(update: Munch,
             c.message.chat.id, database).process(c.data)
         try:
             Bot.edit_message_text(message,
-                                c.message.chat.id,
-                                c.message.message_id,
-                                reply_markup=markup,
-                                parse_mode=parse_mode)
+                                  c.message.chat.id,
+                                  c.message.message_id,
+                                  reply_markup=markup,
+                                  parse_mode=parse_mode)
         except BadRequest as e:
             error_message = str(e)
             if "Message is not modified" in error_message:
                 pass
             else:
                 raise
-            
+
     elif c.data.startswith('renew'):
         message, markup, parse_mode = RenewReminderMenu(
             c.message.chat.id, database).process(c)
@@ -83,7 +83,8 @@ def process_message(update: Munch, db: pymongo.database.Database) -> None:
     elif database.query_for_chat_id()[0]['update_settings']:
         SettingsMenu(update.message.chat.id,
                      database).process_message(update.message.text)
-    elif database.get_reminder_in_construction(update.message['from'].id) != []:
+    elif database.get_reminder_in_construction(
+            update.message['from'].id) != []:
         ReminderBuilder(database).process_message(update)
 
 
@@ -104,18 +105,24 @@ def root():
         "scheduler.get_jobs()": [str(job) for job in scheduler.get_jobs()]
     }
 
+
 @app.delete("/reminder/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_reminder(id: str, db: pymongo.database.Database = Depends(get_db)):
+async def delete_reminder(id: str,
+                          db: pymongo.database.Database = Depends(get_db)):
     database = Database(None, db)
     try:
         database.chat_id = database.query_for_reminder_id(id)[0]['chat_id']
     except AssertionError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no such reminderid found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="no such reminderid found")
 
     database.delete_reminder(id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.get("/reminders", response_model=List[schemas.Reminder], status_code=status.HTTP_200_OK)
+
+@app.get("/reminders",
+         response_model=List[schemas.Reminder],
+         status_code=status.HTTP_200_OK)
 async def get_all_reminders(db: pymongo.database.Database = Depends(get_db)):
     database = Database(None, db)
     chats = list(database.chat_collection.find({}))
@@ -126,33 +133,50 @@ async def get_all_reminders(db: pymongo.database.Database = Depends(get_db)):
             timezone = reminder['timezone']
             frequency = reminder['frequency'].split('-')[0].split()[0]
             hour, minute = [int(t) for t in reminder['time'].split(":")]
-            if frequency ==  REMINDER_ONCE: # , REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY]:
-                reminder['frequency'] = pytz.utc.localize(datetime.strptime(f"{reminder['frequency'].split()[1]}-{hour}-{minute}", "%Y-%m-%d-%H-%M")).astimezone(pytz.timezone(timezone)).strftime(f'{REMINDER_ONCE} %Y-%m-%d')
-            reminder['time'] = utils.convert_time_str(reminder['time'], timezone)
+            if frequency == REMINDER_ONCE:  # , REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY]:
+                reminder['frequency'] = pytz.utc.localize(
+                    datetime.strptime(
+                        f"{reminder['frequency'].split()[1]}-{hour}-{minute}",
+                        "%Y-%m-%d-%H-%M")).astimezone(pytz.timezone(
+                            timezone)).strftime(f'{REMINDER_ONCE} %Y-%m-%d')
+            reminder['time'] = utils.convert_time_str(reminder['time'],
+                                                      timezone)
             return_reminders.append({
-                'reminder_id': reminder['reminder_id'],
-                'chat_id': chat_id,
-                'from_user_id': reminder['user_id'],
-                'reminder_text': reminder['reminder_text'],
-                'file_id': None if 'file_id' not in reminder.keys() else reminder['file_id'],
-                'timezone':  timezone,
-                'frequency': reminder['frequency'],
-                'time': reminder['time']
+                'reminder_id':
+                reminder['reminder_id'],
+                'chat_id':
+                chat_id,
+                'from_user_id':
+                reminder['user_id'],
+                'reminder_text':
+                reminder['reminder_text'],
+                'file_id':
+                None
+                if 'file_id' not in reminder.keys() else reminder['file_id'],
+                'timezone':
+                timezone,
+                'frequency':
+                reminder['frequency'],
+                'time':
+                reminder['time']
             })
     return return_reminders
+
 
 @app.post("/reminders",
           response_model=List[schemas.ShowReminder],
           status_code=HTTP_201_CREATED)
 async def insert_reminders(requests: List[schemas.Reminder],
-                          db: pymongo.database.Database = Depends(get_db)):
+                           db: pymongo.database.Database = Depends(get_db)):
     response = []
     for request in requests:
         if not utils.is_valid_time(request.time):
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                detail="Invalid time!")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid time!")
         if request.frequency.split('-')[0].split()[0] not in [
-                REMINDER_ONCE, REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY
+                REMINDER_ONCE, REMINDER_DAILY, REMINDER_WEEKLY,
+                REMINDER_MONTHLY
         ]:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -175,9 +199,14 @@ async def insert_reminders(requests: List[schemas.Reminder],
         del _reminder['chat_id']
         frequency = _reminder['frequency'].split('-')[0].split()[0]
         hour, minute = [int(t) for t in _reminder['time'].split(":")]
-        if frequency ==  REMINDER_ONCE: # , REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY]:
-            _reminder['frequency'] = pytz.timezone(timezone).localize(datetime.strptime(f"{_reminder['frequency'].split()[1]}-{hour}-{minute}", "%Y-%m-%d-%H-%M")).astimezone(pytz.utc).strftime(f'{REMINDER_ONCE} %Y-%m-%d')
-        _reminder['time'] = utils.convert_time_str_back_to_utc(_reminder['time'], timezone)
+        if frequency == REMINDER_ONCE:  # , REMINDER_DAILY, REMINDER_WEEKLY, REMINDER_MONTHLY]:
+            _reminder['frequency'] = pytz.timezone(timezone).localize(
+                datetime.strptime(
+                    f"{_reminder['frequency'].split()[1]}-{hour}-{minute}",
+                    "%Y-%m-%d-%H-%M")).astimezone(
+                        pytz.utc).strftime(f'{REMINDER_ONCE} %Y-%m-%d')
+        _reminder['time'] = utils.convert_time_str_back_to_utc(
+            _reminder['time'], timezone)
         database.add_reminder_to_construction(**_reminder)
         utils.create_reminder(request.chat_id, request.from_user_id, database)
         database.delete_reminder_in_construction(request.from_user_id)
@@ -192,9 +221,9 @@ async def respond(request: Request,
     try:
         req = await request.body()
         update = Munch.fromDict(json.loads(req))
-        if os.environ['MODE'] == 'DEBUG':
-            utils.write_json(update, f"/code/app/output.json")
-        
+        # if os.environ['MODE'] == 'DEBUG':
+        utils.write_json(update, f"/code/app/output.json")
+
         if 'message' in update:
             database = Database(update.message.chat.id, db)
             if not database.is_chat_id_exists():
@@ -230,6 +259,6 @@ async def respond(request: Request,
 
     except Exception as e:
         Bot.send_message(DEV_CHAT_ID, getattr(e, 'message', str(e)))
-        # raise
+        raise
 
     return Response(status_code=status.HTTP_200_OK)

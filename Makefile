@@ -1,9 +1,9 @@
-REMINDERBOT_VERSION ?= 1.13
+REMINDERBOT_VERSION ?= 1.14
 BACKUP_DIR ?= ~/backup
 REMINDERBOT_BACKUP_FILE ?= reminderbot-backup.tar
 
 format: 
-	yapf -i -r -p telegram-reminderbot telegram-modbot
+	yapf -i -r -p .
 
 backup-reminderbot:
 	docker stop reminderbot reminderbot_db
