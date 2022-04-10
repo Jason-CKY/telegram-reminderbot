@@ -259,6 +259,7 @@ async def respond(request: Request,
 
     except Exception as e:
         Bot.send_message(DEV_CHAT_ID, getattr(e, 'message', str(e)))
-        raise
+        if os.environ['MODE'] == 'DEBUG':
+            raise
 
     return Response(status_code=status.HTTP_200_OK)
