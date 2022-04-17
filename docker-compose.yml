@@ -28,6 +28,7 @@ services:
     networks:
       - reminderbot
     environment:
+      MODE: PRODUCTION
       BOT_TOKEN: $BOT_TOKEN
       DEV_CHAT_ID: $DEV_CHAT_ID
       POLLING_INTERVAL: "0.2"

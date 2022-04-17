@@ -4,7 +4,10 @@ import os
 import requests
 import json
 
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
+if os.environ['MODE'] == 'DEBUG':
+    logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+else:
+    logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
 
 def main():
@@ -12,7 +15,7 @@ def main():
     bot_token = os.environ.get("BOT_TOKEN")
     polling_interval = float(os.environ.get("POLLING_INTERVAL", "0.2"))
     while True:
-        logging.info("Checking for updates...")
+        logging.debug("Checking for updates...")
         updates = requests.get(
             f"https://api.telegram.org/bot{bot_token}/getUpdates",
             params={"offset": OFFSET})
