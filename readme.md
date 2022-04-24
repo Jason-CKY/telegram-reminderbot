@@ -1,5 +1,7 @@
 # Telegram reminder bot
 
+[![ci](https://github.com/Jason-CKY/telegram-reminderbot/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/Jason-CKY/telegram-reminderbot/actions/workflows/ci.yaml)
+
 Telegram bot that sends you text/image reminders in both personal message or groups.
 
 All the time information is stored in UTC inside the database, and is converted into the group's timezone when rendering it.
