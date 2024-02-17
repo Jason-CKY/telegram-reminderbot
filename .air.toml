@@ -2,7 +2,7 @@
 
 [build]
 # Just plain old shell command. You could use `make` as well.
-cmd = "templ generate && swag init --parseDependency && go build -o ./tmp/main ."
+cmd = "go build -o ./tmp/main ."
 # Watch these filename extensions.
 include_ext = ["go", "tpl", "tmpl", "html", "templ"]
 # Exclude specific regular expressions.

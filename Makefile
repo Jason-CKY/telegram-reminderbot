@@ -5,23 +5,6 @@
 help:			## Help command
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-.PHONY: install-deps
-install-deps:		## install all required dev dependencies
-	go install github.com/cosmtrek/air@latest
-	go install github.com/a-h/templ/cmd/templ@latest
-	go install github.com/swaggo/swag/cmd/swag@latest
-	templ generate
-	go mod tidy
-	swag init --parseDependency
-	
-
-.PHONY: build-css
-build-css:		## use tailwind cli to build out output css
-	npx tailwindcss -i ./build/input.css -o ./static/output.css
-
-.PHONY: watch-css
-watch-css: 		## set css build into watch mode for development
-	npx tailwindcss -i ./build/input.css -o ./static/output.css --watch
 
 .PHONY: build-dev
 build-dev:	build-dev	## rebuild all the images in the docker-compose file
