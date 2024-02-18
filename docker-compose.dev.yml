@@ -17,6 +17,30 @@ services:
       DB_CLIENT: "sqlite3"
       DB_FILENAME: "/directus/database/data.db"
       WEBSOCKETS_ENABLED: true
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8055/server/health || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  initialize-db:
+    image: alpine:latest
+    container_name: initDb
+    depends_on:
+      directus:
+        condition: service_healthy
+    volumes: 
+      - ./scripts:/scripts
+    environment:
+      DIRECTUS_URL: http://directus:8055
+    command: >
+      /bin/sh -c '
+        apk add curl jq bash
+        /bin/bash ./scripts/directus/build-tables.sh
+        /bin/bash ./scripts/directus/seed-data.sh
+        /bin/bash ./scripts/directus/set-permissions.sh
+      '
+
 
 volumes:
   directus_database:

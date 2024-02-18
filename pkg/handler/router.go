@@ -35,7 +35,8 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	case "support":
 		msg.Text = core.SUPPORT_MESSAGE
 	case "remind":
-		msg.Text = "remind command handling"
+		InitializeReminder(update, bot)
+		return
 	case "list":
 		msg.Text = "list command handling"
 	case "settings":
