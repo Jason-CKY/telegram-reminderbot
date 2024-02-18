@@ -7,6 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
+	"github.com/Jason-CKY/telegram-reminderbot/pkg/handler"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -39,10 +40,10 @@ func main() {
 
 	bot, err := tgbotapi.NewBotAPI(core.BotToken)
 	bot.Debug = true
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Infof("Authorized on account %s", bot.Self.UserName)
 
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -50,12 +51,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			bot.Send(msg)
+			handler.HandleMessage(&update, bot)
 		}
 	}
 
