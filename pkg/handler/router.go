@@ -7,16 +7,28 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	if update.Message.IsCommand() {
-		HandleCommand(update, bot)
-	} else {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
-
-		if _, err := bot.Send(msg); err != nil {
-			log.Fatal(err)
+func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+	if update.Message != nil { // If we got a message
+		if update.Message.IsCommand() {
+			HandleCommand(update, bot)
+		} else {
+			HandleMessage(update, bot)
 		}
+	}
+}
+func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+	var msg tgbotapi.MessageConfig
+	if update.Message.Text == core.CANCEL_MESSAGE {
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, core.CANCEL_OPERATION_MESSAGE)
+		msg.ReplyToMessageID = update.Message.MessageID
+		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	} else {
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		msg.ReplyToMessageID = update.Message.MessageID
+	}
+
+	if _, err := bot.Send(msg); err != nil {
+		log.Fatal(err)
 	}
 }
 

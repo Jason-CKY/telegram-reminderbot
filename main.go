@@ -51,7 +51,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			handler.HandleMessage(&update, bot)
+			handler.HandleUpdate(&update, bot)
 		}
 	}
 
