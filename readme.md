@@ -4,21 +4,15 @@
 
 - docker (docker-desktop if you are using windows)
 - docker-compose (comes with docker-desktop, but can install [here](https://docs.docker.com/compose/install/standalone/) if you are not on windows)
-- [>=Node LTS v18](https://nodejs.org/en/download)
 - [>=Go v1.21](https://go.dev/doc/install)
 - [Air](https://github.com/cosmtrek/air)
-- [templ](https://github.com/a-h/templ)
 
 ## Features
 
-- [swagger-ui](https://swagger.io/tools/swagger-ui/) for JSON api routes, declared with [swaggo/swag declarative comments format](https://github.com/swaggo/swag#declarative-comments-format)
 - [air](https://github.com/cosmtrek/air) for code reloading in dev environment
-- [echo](https://echo.labstack.com/) web server that serves html on htmx endpoints
 - [Directus](https://directus.io/) for headless CMS and API routes for CRUD operations
 
-
 ## Quickstart (development mode)
-
 
 Run `cp .env.example .env`, and fill in the relevant information
 
@@ -33,29 +27,12 @@ make initialize-db
 air
 ```
 
-There will be swagger documentation being served from `http://localhost:8080/swagger/index.html`.
+### Todos
 
-
-## Format on save
-
-Add the following config into your vscode `settings.json` to enable format on save of a file in vscode:
-
-```json
-"editor.formatOnSave": true,
-```
-
-## VS-code extensions for good developer experience
-
-- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-- [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
-
-### Syntax highlighting of golang template files on vscode
-
-- Download [templ-vscode](https://marketplace.visualstudio.com/items?itemName=a-h.templ) vscode extension for go-templ syntax highlighting
-- Add the following into your vscode `settings.json` to allow for tailwind syntax highlighting in your go `templ` files:
-
-```json
-"tailwindCSS.includeLanguages": {
-"templ": "html"
-}
-```
+- `Reminder in Construction` and `Reminder` collections in directus
+- Delete reminder in construction when cancelled
+- Finish the flow for making once-off reminder
+- Finish flow for recurring reminders
+- Handle repeated `/remind` cases (ignore them)
+- Handle group chat settings
+  - Handle reminder from each user separately
