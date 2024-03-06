@@ -7,7 +7,7 @@ import (
 func GetCancelKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	var CancelKeyboard = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🚫 Cancel"),
+			tgbotapi.NewKeyboardButton(CANCEL_MESSAGE),
 		),
 	)
 	CancelKeyboard.InputFieldPlaceholder = "Enter reminder text."
