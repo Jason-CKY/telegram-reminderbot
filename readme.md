@@ -17,12 +17,7 @@
 Run `cp .env.example .env`, and fill in the relevant information
 
 ```sh
-# Run install-deps once to install all dev dependencies, including air and templ
-make install-deps
-# Start any dev dependencies with docker-compose
 make build-dev
-# make sure directus is up on http://localhost:8055 before running migrations for directus
-make initialize-db
 # start golang server with code reloading using air
 air
 ```
