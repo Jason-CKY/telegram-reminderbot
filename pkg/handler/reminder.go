@@ -9,7 +9,6 @@ import (
 )
 
 func InitializeReminder(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	// Initialize reminder in directus
 	reminder := schemas.Reminder{
 		Id:             uuid.New().String(),
 		ChatId:         update.Message.Chat.ID,
@@ -21,10 +20,12 @@ func InitializeReminder(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		ReminderText:   "",
 		InConstruction: true,
 	}
+	// delete previous reminders in construction to create a new one
 	err := reminder.DeleteReminderInConstruction()
 	if err != nil {
 		log.Fatal(err)
 	}
+	// create a new reminder
 	err = reminder.Create()
 	if err != nil {
 		log.Fatal(err)
