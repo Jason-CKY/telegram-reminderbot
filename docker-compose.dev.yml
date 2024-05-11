@@ -26,9 +26,6 @@ services:
   initialize-db:
     image: alpine:latest
     container_name: initDb
-    depends_on:
-      directus:
-        condition: service_healthy
     volumes: 
       - ./scripts:/scripts
     environment:
@@ -36,6 +33,10 @@ services:
     command: >
       /bin/sh -c '
         apk add curl jq bash
+        until curl -s http://directus:8055/server/health | grep -q "ok"; do
+          echo "Waiting for directus to be ready..."
+          sleep 5
+        done
         /bin/bash ./scripts/directus/build-tables.sh
         /bin/bash ./scripts/directus/seed-data.sh
         /bin/bash ./scripts/directus/set-permissions.sh

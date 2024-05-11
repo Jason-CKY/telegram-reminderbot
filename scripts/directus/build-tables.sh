@@ -29,6 +29,11 @@ curl -X POST -H "Content-Type: application/json" \
 
 curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"type":"text","meta":{"interface":"input-multiline","special":null},"field":"reminder_text"}' \
+    $DIRECTUS_URL/fields/reminder \
+
+curl -X POST -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"field":"timezone","type":"string","schema":{},"meta":{"interface":"input","special":null,"required":true},"collection":"reminder"}' \
     $DIRECTUS_URL/fields/reminder \
 

@@ -11,15 +11,16 @@ import (
 func InitializeReminder(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	// Initialize reminder in directus
 	reminder := schemas.Reminder{
-		Id:         uuid.New().String(),
-		ChatId:     update.Message.Chat.ID,
-		FromUserId: update.Message.From.ID,
-		FileId:     "",
-		Timezone:   "Asia/Singapore",
-		Frequency:  "",
-		Time:       "",
+		Id:           uuid.New().String(),
+		ChatId:       update.Message.Chat.ID,
+		FromUserId:   update.Message.From.ID,
+		FileId:       "",
+		Timezone:     "Asia/Singapore",
+		Frequency:    "",
+		Time:         "",
+		ReminderText: "",
 	}
-	err := core.CreateReminder(&reminder)
+	err := reminder.Create()
 	if err != nil {
 		log.Error(err)
 	}
