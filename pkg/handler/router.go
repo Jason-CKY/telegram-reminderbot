@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/schemas"
+	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 	log "github.com/sirupsen/logrus"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -22,7 +23,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	var msg tgbotapi.MessageConfig
 	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.Message.Chat.ID, update.Message.From.ID)
 
-	if update.Message.Text == core.CANCEL_MESSAGE {
+	if update.Message.Text == utils.CANCEL_MESSAGE {
 		reminder := schemas.Reminder{
 			Id:             "",
 			ChatId:         update.Message.Chat.ID,
@@ -38,13 +39,12 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		msg = tgbotapi.NewMessage(update.Message.Chat.ID, core.CANCEL_OPERATION_MESSAGE)
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, utils.CANCEL_OPERATION_MESSAGE)
 		msg.ReplyToMessageID = update.Message.MessageID
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	} else if reminderInConstruction != nil {
 		// TOOD: https://github.com/Jason-CKY/telegram-reminderbot/blob/main/app/menu.py#L61
-		msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Found reminder text")
-		msg.ReplyToMessageID = update.Message.MessageID
+		msg = core.BuildReminder(reminderInConstruction, update)
 	} else {
 		msg = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 		msg.ReplyToMessageID = update.Message.MessageID
@@ -64,11 +64,11 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	// Extract the command from the Message.
 	switch update.Message.Command() {
 	case "help":
-		msg.Text = core.HELP_MESSAGE
+		msg.Text = utils.HELP_MESSAGE
 	case "start":
-		msg.Text = core.HELP_MESSAGE
+		msg.Text = utils.HELP_MESSAGE
 	case "support":
-		msg.Text = core.SUPPORT_MESSAGE
+		msg.Text = utils.SUPPORT_MESSAGE
 	case "remind":
 		InitializeReminder(update, bot)
 		return

@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/schemas"
+	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +32,7 @@ func InitializeReminder(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		log.Fatal(err)
 	}
 	// Reply to user message, with keyboard commands to cancel and placeholder text to enter reminder text
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, core.REMINDER_BUILDER_MESSAGE)
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.REMINDER_BUILDER_MESSAGE)
 
 	msg.ReplyMarkup = core.GetCancelKeyboard()
 	msg.ReplyToMessageID = update.Message.MessageID

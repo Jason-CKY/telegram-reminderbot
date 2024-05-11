@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
+	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 )
 
 type Reminder struct {
@@ -23,7 +23,7 @@ type Reminder struct {
 }
 
 func (reminder Reminder) Create() error {
-	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -51,7 +51,7 @@ func (reminder Reminder) Create() error {
 }
 
 func (reminder Reminder) Update() error {
-	endpoint := fmt.Sprintf("%v/items/reminder/%v", core.DirectusHost, reminder.Id)
+	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -79,7 +79,7 @@ func (reminder Reminder) Update() error {
 }
 
 func (reminder Reminder) DeleteById() error {
-	endpoint := fmt.Sprintf("%v/items/reminder/%v", core.DirectusHost, reminder.Id)
+	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
 	if httpErr != nil {
@@ -107,7 +107,7 @@ func (reminder Reminder) DeleteById() error {
 
 func (reminder Reminder) DeleteReminderInConstruction() error {
 	// delete all reminders that has from_user_id == reminder.FromUserId and ChatId == reminder.ChatId
-	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -152,7 +152,7 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 }
 
 func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {

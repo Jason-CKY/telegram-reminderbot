@@ -1,4 +1,4 @@
-package core
+package utils
 
 var (
 	LogLevel     = "info"
