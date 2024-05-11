@@ -21,9 +21,13 @@ func InitializeReminder(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		ReminderText:   "",
 		InConstruction: true,
 	}
-	err := reminder.Create()
+	err := reminder.DeleteReminderInConstruction()
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
+	}
+	err = reminder.Create()
+	if err != nil {
+		log.Fatal(err)
 	}
 	// Reply to user message, with keyboard commands to cancel and placeholder text to enter reminder text
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, core.REMINDER_BUILDER_MESSAGE)

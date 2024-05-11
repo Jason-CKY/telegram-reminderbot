@@ -22,8 +22,6 @@ type Reminder struct {
 	InConstruction bool   `json:"in_construction"`
 }
 
-// func getReminder
-
 func (reminder Reminder) Create() error {
 	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
 	reqBody, _ := json.Marshal(reminder)
@@ -80,7 +78,7 @@ func (reminder Reminder) Update() error {
 	return nil
 }
 
-func (reminder Reminder) Delete() error {
+func (reminder Reminder) DeleteById() error {
 	endpoint := fmt.Sprintf("%v/items/reminder/%v", core.DirectusHost, reminder.Id)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -102,6 +100,52 @@ func (reminder Reminder) Delete() error {
 	// error handling for json unmarshaling
 	if jsonErr != nil {
 		return jsonErr
+	}
+
+	return nil
+}
+
+func (reminder Reminder) DeleteReminderInConstruction() error {
+	// delete all reminders that has from_user_id == reminder.FromUserId and ChatId == reminder.ChatId
+	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"_and": [
+					{
+						"chat_id": {
+							"_eq": "%v"
+						}
+					},
+					{
+						"from_user_id": {
+							"_eq": "%v"
+						}
+					},
+					{
+						"in_construction": {
+							"_eq": true
+						}
+					}
+				]
+			}
+		}
+	}`, reminder.ChatId, reminder.FromUserId))
+
+	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, bytes.NewBuffer(reqBody))
+
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return httpErr
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 && res.StatusCode != 204 {
+		return fmt.Errorf("error deleting reminders in construction: %v", res.Status)
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
+	"github.com/Jason-CKY/telegram-reminderbot/pkg/schemas"
 	log "github.com/sirupsen/logrus"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -19,6 +20,21 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	var msg tgbotapi.MessageConfig
 	if update.Message.Text == core.CANCEL_MESSAGE {
+		reminder := schemas.Reminder{
+			Id:             "",
+			ChatId:         update.Message.Chat.ID,
+			FromUserId:     update.Message.From.ID,
+			FileId:         "",
+			Timezone:       "Asia/Singapore",
+			Frequency:      "",
+			Time:           "",
+			ReminderText:   "",
+			InConstruction: true,
+		}
+		err := reminder.DeleteReminderInConstruction()
+		if err != nil {
+			log.Fatal(err)
+		}
 		msg = tgbotapi.NewMessage(update.Message.Chat.ID, core.CANCEL_OPERATION_MESSAGE)
 		msg.ReplyToMessageID = update.Message.MessageID
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
