@@ -66,7 +66,7 @@ func (reminder Reminder) Update() error {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error inserting reminder to directus: %v", res.Status)
+		return fmt.Errorf("error updating reminder to directus: %v", res.Status)
 	}
 	var reminderResponse map[string]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
@@ -93,7 +93,7 @@ func (reminder Reminder) DeleteById() error {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error inserting reminder to directus: %v", res.Status)
+		return fmt.Errorf("error deleting reminder in directus: %v", res.Status)
 	}
 	var reminderResponse map[string]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
@@ -149,4 +149,58 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	}
 
 	return nil
+}
+
+func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error) {
+	endpoint := fmt.Sprintf("%v/items/reminder", core.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"_and": [
+					{
+						"chat_id": {
+							"_eq": "%v"
+						}
+					},
+					{
+						"from_user_id": {
+							"_eq": "%v"
+						}
+					},
+					{
+						"in_construction": {
+							"_eq": true
+						}
+					}
+				]
+			}
+		}
+	}`, chatId, fromUserId))
+	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("error searching for reminder in directus: %v", res.Status)
+	}
+	var reminderResponse map[string][]Reminder
+	jsonErr := json.Unmarshal(body, &reminderResponse)
+	// error handling for json unmarshaling
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	if len(reminderResponse["data"]) == 0 {
+		return nil, nil
+	}
+
+	return &reminderResponse["data"][0], nil
 }

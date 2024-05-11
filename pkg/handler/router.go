@@ -17,8 +17,11 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 	}
 }
+
 func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	var msg tgbotapi.MessageConfig
+	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.Message.Chat.ID, update.Message.From.ID)
+
 	if update.Message.Text == core.CANCEL_MESSAGE {
 		reminder := schemas.Reminder{
 			Id:             "",
@@ -38,6 +41,10 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		msg = tgbotapi.NewMessage(update.Message.Chat.ID, core.CANCEL_OPERATION_MESSAGE)
 		msg.ReplyToMessageID = update.Message.MessageID
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	} else if reminderInConstruction != nil {
+		// TOOD: https://github.com/Jason-CKY/telegram-reminderbot/blob/main/app/menu.py#L61
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Found reminder text")
+		msg.ReplyToMessageID = update.Message.MessageID
 	} else {
 		msg = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 		msg.ReplyToMessageID = update.Message.MessageID

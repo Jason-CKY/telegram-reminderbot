@@ -24,10 +24,9 @@ air
 
 ### Todos
 
-- `Reminder in Construction` and `Reminder` collections in directus
-- Delete reminder in construction when cancelled
-- Finish the flow for making once-off reminder
-- Finish flow for recurring reminders
-- Handle repeated `/remind` cases (ignore them)
-- Handle group chat settings
-  - Handle reminder from each user separately
+- [ ] Finish the flow for making once-off reminder
+- [ ] Finish flow for recurring reminders
+- [ ] Handle image reminders
+- [X] Handle repeated `/remind` cases (delete old reminder in construction and create new one)
+- [ ] Handle group chat settings
+- [ ] Handle reminder from each user separately
