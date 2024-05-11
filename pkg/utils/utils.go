@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 )
 
@@ -23,4 +25,35 @@ func LookupEnvOrInt(key string, defaultValue int) int {
 		panic(err.Error())
 	}
 	return num
+}
+
+func IsValidTime(time string) bool {
+	/*
+	   Use regex to match military time in <HH>:<MM>
+	   source: https://stackoverflow.com/questions/1494671/regular-expression-for-matching-time-in-military-24-hour-format
+	   regex: ^([01]\d|2[0-3]):([0-5]\d)$
+	*/
+	matched, _ := regexp.MatchString(`^([01]\d|2[0-3]):([0-5]\d)$`, time)
+	return matched
+}
+
+func ParseDayOfMonth(day int) string {
+	/*
+		day is 1-31
+		1 -> 1st
+		2 -> 2nd
+		3 -> 3rd
+		4 -> 4th
+		...
+	*/
+	ones_digit := day % 10
+	if ones_digit == 1 {
+		return fmt.Sprintf("%vst", day)
+	} else if ones_digit == 2 {
+		return fmt.Sprintf("%vnd", day)
+	} else if ones_digit == 3 {
+		return fmt.Sprintf("%vrd", day)
+	} else {
+		return fmt.Sprintf("%vth", day)
+	}
 }
