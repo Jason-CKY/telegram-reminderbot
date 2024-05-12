@@ -74,7 +74,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				log.Fatal(err)
 			}
 
-			// TODO: Calendar widget
+			// TODO: Monthly Calendar widget
 			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_YEAR)
 			msg.ReplyToMessageID = update.Message.MessageID
 			minYear := time.Now().Year()
