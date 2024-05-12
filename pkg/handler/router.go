@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strings"
+
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/schemas"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
@@ -17,6 +19,8 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		} else {
 			HandleMessage(update, bot)
 		}
+	} else if update.CallbackQuery != nil {
+		HandleCallbackQuery(update, bot)
 	}
 }
 
@@ -99,5 +103,23 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 
 	if _, err := bot.Send(msg); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+	if strings.HasPrefix(update.CallbackQuery.Data, "cbcal") {
+		action, step, year, month, day := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
+		log.Infof("action: %v\nstep: %v\nyear: %v\nmonth: %v\nday: %v", action, step, year, month, day)
+		if action != utils.CALLBACK_NO_ACTION {
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				"test to update message text",
+			)
+
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }

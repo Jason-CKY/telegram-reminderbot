@@ -24,13 +24,14 @@ air
 
 ### Todos
 
-- [ ] Finish the flow for making once-off reminder
+- [X] Handle repeated `/remind` cases (delete old reminder in construction and create new one)
 - [X] Finish flow for daily reminders
 - [X] Finish flow for weekly reminders
 - [X] Finish flow for monthly reminders
+- [ ] Finish the flow for making once-off reminder
 - [ ] Finish flow for yearly reminders
 - [ ] Set separate go-routine to check if any reminder is due
-- [ ] Handle image reminders
-- [X] Handle repeated `/remind` cases (delete old reminder in construction and create new one)
 - [ ] Handle group chat settings
-- [ ] Handle reminder from each user separately
+- [ ] Handle listing reminders
+- [ ] renew reminders
+- [ ] Handle image reminders

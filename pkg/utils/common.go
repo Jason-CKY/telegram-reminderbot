@@ -47,3 +47,11 @@ var DAY_OF_WEEK = map[string]int{
 	"Saturday":  6,
 	"Sunday":    7,
 }
+
+const CALLBACK_NO_ACTION = "n"
+const CALLBACK_GOTO = "g"
+const CALLBACK_SELECT = "s"
+
+const CALLBACK_CALENDAR_STEP_YEAR = "y"
+const CALLBACK_CALENDAR_STEP_MONTH = "m"
+const CALLBACK_CALENDAR_STEP_DAY = "d"

@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -74,6 +75,13 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 
 			// TODO: Calendar widget
+			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, "Select year")
+			msg.ReplyToMessageID = update.Message.MessageID
+			msg.ReplyMarkup = BuildYearCalendarWidget(time.Now())
+			if _, err := bot.Send(msg); err != nil {
+				log.Fatal(err)
+			}
+
 		case utils.REMINDER_DAILY:
 			reminderInConstruction.Frequency = update.Message.Text
 			reminderInConstruction.InConstruction = false
