@@ -24,15 +24,14 @@ func GetCallbackCalendarData(action string, step string, year int, month int, da
 	return fmt.Sprintf("cbcal_%v_%v_%v_%v_%v", action, step, year, month, day)
 }
 
-func BuildYearCalendarWidget(minDate time.Time) tgbotapi.InlineKeyboardMarkup {
-	minYear := minDate.Year()
+func BuildYearCalendarWidget(minYear int) tgbotapi.InlineKeyboardMarkup {
 	maxYear := minYear + 3
 	currentYear := time.Now().Year()
 	showBackNavButton := minYear > currentYear
 	var navButtons []tgbotapi.InlineKeyboardButton
 	if showBackNavButton {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear-1, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear-4, 0, 0)),
 			tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0)),
 			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, maxYear+1, 0, 0)),
 		)

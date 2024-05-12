@@ -75,9 +75,10 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 
 			// TODO: Calendar widget
-			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, "Select year")
+			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_YEAR)
 			msg.ReplyToMessageID = update.Message.MessageID
-			msg.ReplyMarkup = BuildYearCalendarWidget(time.Now())
+			minYear := time.Now().Year()
+			msg.ReplyMarkup = BuildYearCalendarWidget(minYear)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}

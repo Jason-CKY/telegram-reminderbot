@@ -111,14 +111,20 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		action, step, year, month, day := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
 		log.Infof("action: %v\nstep: %v\nyear: %v\nmonth: %v\nday: %v", action, step, year, month, day)
 		if action != utils.CALLBACK_NO_ACTION {
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				"test to update message text",
-			)
+			if action == utils.CALLBACK_GOTO {
+				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
+					replyMarkup := core.BuildYearCalendarWidget(year)
+					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+						update.CallbackQuery.Message.Chat.ID,
+						update.CallbackQuery.Message.MessageID,
+						utils.CALLBACK_CALENDAR_SELECT_YEAR,
+						replyMarkup,
+					)
+					if _, err := bot.Request(editedMessage); err != nil {
+						log.Fatal(err)
+					}
+				}
 
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
 			}
 		}
 	}
