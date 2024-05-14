@@ -111,8 +111,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 
 func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if strings.HasPrefix(update.CallbackQuery.Data, "cbcal") {
-		action, step, year, month, day := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
-		log.Infof("action: %v\nstep: %v\nyear: %v\nmonth: %v\nday: %v", action, step, year, month, day)
+		action, step, _, _, _ := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
 		if action != utils.CALLBACK_NO_ACTION {
 			if action == utils.CALLBACK_GOTO {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {

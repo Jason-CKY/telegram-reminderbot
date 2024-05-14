@@ -204,3 +204,8 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 
 	return &reminderResponse["data"][0], nil
 }
+
+func GetDueReminders() ([]Reminder, error) {
+	dueReminders := []Reminder{}
+	return dueReminders, nil
+}
