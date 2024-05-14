@@ -113,7 +113,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		if action != utils.CALLBACK_NO_ACTION {
 			if action == utils.CALLBACK_GOTO {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
-					replyMarkup := core.BuildYearCalendarWidget(year)
+					replyMarkup := core.BuildYearCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -123,8 +123,31 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
+				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
+					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+						update.CallbackQuery.Message.Chat.ID,
+						update.CallbackQuery.Message.MessageID,
+						utils.CALLBACK_CALENDAR_SELECT_MONTH,
+						replyMarkup,
+					)
+					if _, err := bot.Request(editedMessage); err != nil {
+						log.Fatal(err)
+					}
 				}
-
+			} else if action == utils.CALLBACK_SELECT {
+				if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
+					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+						update.CallbackQuery.Message.Chat.ID,
+						update.CallbackQuery.Message.MessageID,
+						utils.CALLBACK_CALENDAR_SELECT_MONTH,
+						replyMarkup,
+					)
+					if _, err := bot.Request(editedMessage); err != nil {
+						log.Fatal(err)
+					}
+				}
 			}
 		}
 	}

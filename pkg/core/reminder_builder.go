@@ -74,11 +74,11 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				log.Fatal(err)
 			}
 
-			// TODO: Monthly Calendar widget
-			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_YEAR)
+			// Monthly Calendar widget
+			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
 			msg.ReplyToMessageID = update.Message.MessageID
 			minYear := time.Now().Year()
-			msg.ReplyMarkup = BuildYearCalendarWidget(minYear)
+			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0))
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
@@ -147,7 +147,14 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
-			// TODO: Calendar widget
+			// Monthly Calendar widget
+			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
+			msg.ReplyToMessageID = update.Message.MessageID
+			minYear := time.Now().Year()
+			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0))
+			if _, err := bot.Send(msg); err != nil {
+				log.Fatal(err)
+			}
 		}
 	} else if reminderInConstruction.Frequency == utils.REMINDER_WEEKLY {
 		val, ok := utils.DAY_OF_WEEK[update.Message.Text]
