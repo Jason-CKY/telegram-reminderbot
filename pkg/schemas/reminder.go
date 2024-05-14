@@ -171,6 +171,7 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 		}
 		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_DAILY:
+		// TODO: Test with edge cases and fix timezone issues
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
 		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, time.UTC)
@@ -179,6 +180,7 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 		}
 		return triggerTime, nil
 	case frequency == utils.REMINDER_WEEKLY:
+		// TODO: Test with edge cases and fix timezone issues
 		reminderWeekday, _ := strconv.Atoi(frequencyText[1])
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
@@ -190,6 +192,7 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 		}
 		return triggerTime, nil
 	case frequency == utils.REMINDER_MONTHLY:
+		// TODO: Test with edge cases and fix timezone issues
 		reminderDay, _ := strconv.Atoi(frequencyText[1])
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
@@ -200,6 +203,7 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 		}
 		return triggerTime, nil
 	case frequency == utils.REMINDER_YEARLY:
+		// TODO: Test with edge cases and fix timezone issues
 		t, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), time.UTC)
 		if err != nil {
 			return time.Now(), err
