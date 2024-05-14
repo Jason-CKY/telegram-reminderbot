@@ -64,5 +64,6 @@ const CALENDAR_YEAR_NUM_ROWS = 2
 const CALENDAR_YEAR_NUM_COLS = 2
 const CALENDAR_MONTH_NUM_ROWS = 4
 const CALENDAR_MONTH_NUM_COLS = 3
-const CALENDAR_DAY_NUM_ROWS = 5
+
+// Day calendar doesn't need a hard-coded number of rows as they need to be under the correct day columns so rows is not fixed
 const CALENDAR_DAY_NUM_COLS = 7
