@@ -183,16 +183,18 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
 					if reminderInConstruction != nil && (reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY) {
 						_, _, selectedYear, selectedMonth, selectedDay := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
-						reminderHour, reminderMinute := utils.ParseReminderTime(reminderInConstruction.Time)
 						tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
-						currentDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, time.UTC).In(tz)
+						// reminderTime stored in db is in UTC, while the date string is in user's timezone, so we need to correct that
+						timezoneAdjustedTimeString := utils.ConvertReminderTimeFromUTCToUserTimezone(reminderInConstruction.Time, tz)
+						reminderHour, reminderMinute := utils.ParseReminderTime(timezoneAdjustedTimeString)
+						reminderDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, tz)
 
-						replyMessageText := fmt.Sprintf("✅ Reminder set for %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT))
+						replyMessageText := fmt.Sprintf("✅ Reminder set for %v", reminderDate.Format(utils.DATE_AND_TIME_FORMAT))
 						if reminderInConstruction.Frequency == utils.REMINDER_ONCE {
-							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, currentDate.Format(utils.DATE_FORMAT))
+							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, reminderDate.Format(utils.DATE_FORMAT))
 						} else if reminderInConstruction.Frequency == utils.REMINDER_YEARLY {
-							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_YEARLY, currentDate.Format(utils.DATE_FORMAT))
-							replyMessageText = fmt.Sprintf("✅ Reminder set for every year at %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
+							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_YEARLY, reminderDate.Format(utils.DATE_FORMAT))
+							replyMessageText = fmt.Sprintf("✅ Reminder set for every year at %v", reminderDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
 						}
 
 						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()

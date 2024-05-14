@@ -73,3 +73,11 @@ func ParseReminderTime(reminderTime string) (int, int) {
 	minute, _ := strconv.Atoi(t[1])
 	return hour, minute
 }
+
+func ConvertReminderTimeFromUTCToUserTimezone(reminderTime string, tz *time.Location) string {
+	hour, minute := ParseReminderTime(reminderTime)
+	currentTime := time.Now()
+	currentDate := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), hour, minute, 0, 0, time.UTC).In(tz)
+
+	return currentDate.Format(TIME_ONLY_FORMAT)
+}

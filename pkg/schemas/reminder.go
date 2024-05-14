@@ -162,11 +162,14 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 	frequency := frequencyText[0]
 	switch {
 	case frequency == utils.REMINDER_ONCE:
-		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), time.UTC)
+		tz, _ := time.LoadLocation(reminder.Timezone)
+		// reminderTime stored in db is in UTC, while the date string is in user's timezone, so we need to correct that
+		timezoneAdjustedTimeString := utils.ConvertReminderTimeFromUTCToUserTimezone(reminder.Time, tz)
+		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], timezoneAdjustedTimeString), tz)
 		if err != nil {
 			return time.Now(), err
 		}
-		return triggerTime, nil
+		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_DAILY:
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
