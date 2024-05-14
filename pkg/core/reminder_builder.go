@@ -88,9 +88,13 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 		case utils.REMINDER_DAILY:
 			reminderInConstruction.Frequency = update.Message.Text
-			// reminderInConstruction.NextTriggerTime =
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			if err != nil {
+				log.Fatal(err)
+			}
+			reminderInConstruction.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 			reminderInConstruction.InConstruction = false
-			err := reminderInConstruction.Update()
+			err = reminderInConstruction.Update()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -165,8 +169,13 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		val, ok := utils.DAY_OF_WEEK[update.Message.Text]
 		if ok {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_WEEKLY, val)
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			if err != nil {
+				log.Fatal(err)
+			}
+			reminderInConstruction.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 			reminderInConstruction.InConstruction = false
-			err := reminderInConstruction.Update()
+			err = reminderInConstruction.Update()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -185,8 +194,13 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		}
 		if day_of_month >= 1 && day_of_month <= 31 {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_WEEKLY, day_of_month)
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			if err != nil {
+				log.Fatal(err)
+			}
+			reminderInConstruction.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 			reminderInConstruction.InConstruction = false
-			err := reminderInConstruction.Update()
+			err = reminderInConstruction.Update()
 			if err != nil {
 				log.Fatal(err)
 			}

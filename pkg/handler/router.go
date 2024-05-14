@@ -193,11 +193,15 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 							replyMessageText = fmt.Sprintf("✅ Reminder set for every year at %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
 						}
 
-						reminderInConstruction.InConstruction = false
-						err := reminderInConstruction.Update()
+						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
 						if err != nil {
 							log.Fatal(err)
-							return
+						}
+						reminderInConstruction.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
+						reminderInConstruction.InConstruction = false
+						err = reminderInConstruction.Update()
+						if err != nil {
+							log.Fatal(err)
 						}
 						editedMessage := tgbotapi.NewEditMessageText(
 							update.CallbackQuery.Message.Chat.ID,

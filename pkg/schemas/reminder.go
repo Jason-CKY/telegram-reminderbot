@@ -157,7 +157,7 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 }
 
 func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
-	// TODO: calculate the next trigger time, in the user's timezone
+	// calculate the next trigger time, in the user's timezone
 	frequencyText := strings.Split(reminder.Frequency, "-")
 	frequency := frequencyText[0]
 	switch {
