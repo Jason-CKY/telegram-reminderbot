@@ -30,9 +30,11 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.Message.Chat.ID, update.Message.From.ID)
 
 	if update.Message.Text == utils.CANCEL_MESSAGE {
-		err := reminderInConstruction.DeleteReminderInConstruction()
-		if err != nil {
-			log.Fatal(err)
+		if reminderInConstruction != nil {
+			err := reminderInConstruction.DeleteReminderInConstruction()
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CANCEL_OPERATION_MESSAGE)
 		msg.ReplyToMessageID = update.Message.MessageID
