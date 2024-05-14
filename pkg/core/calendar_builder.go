@@ -33,9 +33,19 @@ func BuildYearCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup 
 	var buttons [][]tgbotapi.InlineKeyboardButton
 	for year := minYear; year <= maxYear; year++ {
 		if year < currentYear {
-			yearButtons = append(yearButtons, tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0)))
+			yearButtons = append(yearButtons,
+				tgbotapi.NewInlineKeyboardButtonData(
+					" ",
+					GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0),
+				),
+			)
 		} else {
-			yearButtons = append(yearButtons, tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v", year), GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_MONTH, year, 0, 0)))
+			yearButtons = append(yearButtons,
+				tgbotapi.NewInlineKeyboardButtonData(
+					fmt.Sprintf("%v", year),
+					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_YEAR, year, 0, 0),
+				),
+			)
 		}
 
 	}
@@ -82,9 +92,19 @@ func BuildMonthCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup
 
 	for i := 1; i <= 12; i++ {
 		if i < int(currentMonth) && selectedYear <= currentYear {
-			monthButtons = append(monthButtons, tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0)))
+			monthButtons = append(monthButtons,
+				tgbotapi.NewInlineKeyboardButtonData(
+					" ",
+					GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
+				),
+			)
 		} else {
-			monthButtons = append(monthButtons, tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v", time.Month(i).String()[:3]), GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_SELECT_DAY, selectedYear, i, 0)))
+			monthButtons = append(monthButtons,
+				tgbotapi.NewInlineKeyboardButtonData(
+					fmt.Sprintf("%v", time.Month(i).String()[:3]),
+					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, i, 0),
+				),
+			)
 		}
 	}
 
@@ -154,14 +174,16 @@ func BuildDayCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup {
 	for i := 1; i <= daysInMonth; i++ {
 		if (i < currentDate.Day() && selectedDate.Compare(currentDate) <= 0) || i > daysInMonth {
 			dayButtons = append(dayButtons,
-				tgbotapi.NewInlineKeyboardButtonData(" ",
+				tgbotapi.NewInlineKeyboardButtonData(
+					" ",
 					GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
 				),
 			)
 		} else {
 			dayButtons = append(dayButtons,
-				tgbotapi.NewInlineKeyboardButtonData(fmt.Sprint(i),
-					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_SELECT_DAY, selectedYear, i, 0),
+				tgbotapi.NewInlineKeyboardButtonData(
+					fmt.Sprint(i),
+					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, i),
 				),
 			)
 		}

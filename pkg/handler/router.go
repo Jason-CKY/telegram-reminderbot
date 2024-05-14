@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/core"
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/schemas"
@@ -150,7 +153,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					}
 				}
 			} else if action == utils.CALLBACK_SELECT {
-				if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
 					// user clicks on a year
 					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -162,7 +165,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
-				} else if step == utils.CALLBACK_CALENDAR_SELECT_DAY {
+				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
 					// user clicks on a month
 					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -173,6 +176,40 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
+					}
+				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
+					// user clicks on a day
+					reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
+					if reminderInConstruction != nil && (reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY) {
+						_, _, selectedYear, selectedMonth, selectedDay := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
+						reminderTime := strings.Split(reminderInConstruction.Time, ":")
+						reminderHour, _ := strconv.Atoi(reminderTime[0])
+						reminderMinute, _ := strconv.Atoi(reminderTime[1])
+						currentDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, time.UTC)
+
+						replyMessageText := fmt.Sprintf("✅ Reminder set for %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT))
+						if reminderInConstruction.Frequency == utils.REMINDER_ONCE {
+							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, currentDate.Format(utils.DATE_FORMAT))
+						} else if reminderInConstruction.Frequency == utils.REMINDER_YEARLY {
+							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_YEARLY, currentDate.Format(utils.DATE_FORMAT))
+							replyMessageText = fmt.Sprintf("✅ Reminder set for every year at %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
+						}
+
+						reminderInConstruction.InConstruction = false
+						err := reminderInConstruction.Update()
+						if err != nil {
+							log.Fatal(err)
+							return
+						}
+						editedMessage := tgbotapi.NewEditMessageText(
+							update.CallbackQuery.Message.Chat.ID,
+							update.CallbackQuery.Message.MessageID,
+							replyMessageText,
+						)
+						if _, err := bot.Request(editedMessage); err != nil {
+							log.Fatal(err)
+						}
+
 					}
 				}
 			}

@@ -103,17 +103,18 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				log.Fatal(err)
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Which day of week do you want to set your weekly reminder?")
+
 			msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
 				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(utils.MONDAY),
-					tgbotapi.NewKeyboardButton(utils.TUESDAY),
+					tgbotapi.NewKeyboardButton(time.Monday.String()),
+					tgbotapi.NewKeyboardButton(time.Tuesday.String()),
 				),
 				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(utils.WEDNESDAY),
-					tgbotapi.NewKeyboardButton(utils.THURSDAY),
+					tgbotapi.NewKeyboardButton(time.Wednesday.String()),
+					tgbotapi.NewKeyboardButton(time.Thursday.String()),
 				),
 				tgbotapi.NewKeyboardButtonRow(
-					tgbotapi.NewKeyboardButton(utils.FRIDAY),
+					tgbotapi.NewKeyboardButton(time.Friday.String()),
 					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 				),
 			)

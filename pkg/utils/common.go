@@ -30,14 +30,6 @@ const REMINDER_WEEKLY = "Weekly"
 const REMINDER_MONTHLY = "Monthly"
 const REMINDER_YEARLY = "Yearly"
 
-const MONDAY = "Monday"
-const TUESDAY = "Tuesday"
-const WEDNESDAY = "Wednesday"
-const THURSDAY = "Thursday"
-const FRIDAY = "Friday"
-const SATURDAY = "Saturday"
-const SUNDAY = "Sunday"
-
 var DAY_OF_WEEK = map[string]int{
 	"Monday":    1,
 	"Tuesday":   2,
@@ -67,3 +59,8 @@ const CALENDAR_MONTH_NUM_COLS = 3
 
 // Day calendar doesn't need a hard-coded number of rows as they need to be under the correct day columns so rows is not fixed
 const CALENDAR_DAY_NUM_COLS = 7
+
+// format dates in YYYY/MM/DD
+const DATE_FORMAT = "2006/01/02"
+const DATE_AND_TIME_FORMAT = "Mon, 02 Jan 2006 15:04:05"
+const DATE_AND_TIME_FORMAT_WITHOUT_YEAR = "02 Jan 15:04:05"
