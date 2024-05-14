@@ -119,3 +119,77 @@ func BuildMonthCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup
 
 	return replyMarkup
 }
+
+func BuildDayCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup {
+	// TODO: fit the days button on the correct day of the week
+	_, _, selectedYear, selectedMonth, _ := SplitCallbackCalendarData(callbackData)
+	selectedDate := time.Date(selectedYear, time.Month(selectedMonth), 1, 0, 0, 0, 0, time.UTC)
+	currentDate := time.Now()
+
+	var dayButtons []tgbotapi.InlineKeyboardButton
+	var buttons [][]tgbotapi.InlineKeyboardButton
+
+	legendButtons := tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("M", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("T", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("W", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("T", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("F", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("S", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData("S", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+	)
+	buttons = append(buttons, legendButtons)
+
+	daysInMonth := utils.DaysInMonth(selectedDate)
+	for i := 1; i <= utils.CALENDAR_DAY_NUM_ROWS*utils.CALENDAR_DAY_NUM_COLS; i++ {
+		if (i < currentDate.Day() && selectedDate.Compare(currentDate) <= 0) || i > daysInMonth {
+			dayButtons = append(dayButtons, tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0)))
+		} else {
+			dayButtons = append(dayButtons, tgbotapi.NewInlineKeyboardButtonData(fmt.Sprint(i), GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_SELECT_DAY, selectedYear, i, 0)))
+		}
+	}
+
+	for row := 0; row < utils.CALENDAR_DAY_NUM_ROWS; row++ {
+		var rowButtons []tgbotapi.InlineKeyboardButton
+		for col := 0; col < utils.CALENDAR_DAY_NUM_COLS; col++ {
+			rowButtons = append(rowButtons, dayButtons[row*utils.CALENDAR_DAY_NUM_COLS+col])
+
+		}
+		buttons = append(buttons, rowButtons)
+	}
+
+	showBackNavButton := selectedDate.Compare(currentDate) > 0
+	var navButtons []tgbotapi.InlineKeyboardButton
+	prevMonth := selectedMonth - 1
+	prevYear := selectedYear
+	nextMonth := selectedMonth + 1
+	nextYear := selectedYear
+	if prevMonth < 1 {
+		prevMonth = 12
+		prevYear = selectedYear - 1
+	}
+	if nextMonth > 12 {
+		nextMonth = 1
+		nextYear = selectedYear + 1
+	}
+	if showBackNavButton {
+		navButtons = tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, prevYear, prevMonth, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v %v", time.Month(selectedMonth).String()[:3], selectedDate.Year()), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, nextYear, nextMonth, 0)),
+		)
+	} else {
+		navButtons = tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("×", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, prevYear, selectedMonth, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v %v", time.Month(selectedMonth).String()[:3], selectedDate.Year()), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, nextYear, nextMonth, 0)),
+		)
+	}
+
+	buttons = append(buttons, navButtons)
+	replyMarkup := tgbotapi.NewInlineKeyboardMarkup(
+		buttons...,
+	)
+
+	return replyMarkup
+}

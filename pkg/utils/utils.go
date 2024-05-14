@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 func LookupEnvOrString(key string, defaultValue string) string {
@@ -56,4 +57,11 @@ func ParseDayOfMonth(day int) string {
 	} else {
 		return fmt.Sprintf("%vth", day)
 	}
+}
+
+// https://stackoverflow.com/questions/73880828/list-the-number-of-days-in-current-date-month
+func DaysInMonth(t time.Time) int {
+	t = time.Date(t.Year(), t.Month(), 32, 0, 0, 0, 0, time.UTC)
+	daysInMonth := 32 - t.Day()
+	return daysInMonth
 }

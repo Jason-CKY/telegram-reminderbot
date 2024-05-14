@@ -113,6 +113,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		if action != utils.CALLBACK_NO_ACTION {
 			if action == utils.CALLBACK_GOTO {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
+					// user clicks on navigation button on year view
 					replyMarkup := core.BuildYearCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
@@ -124,6 +125,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 						log.Fatal(err)
 					}
 				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					// user clicks on navigation button on month view
 					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
@@ -134,14 +136,39 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
+				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
+					// user clicks on navigation button on day view
+					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data)
+					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+						update.CallbackQuery.Message.Chat.ID,
+						update.CallbackQuery.Message.MessageID,
+						utils.CALLBACK_CALENDAR_SELECT_DAY,
+						replyMarkup,
+					)
+					if _, err := bot.Request(editedMessage); err != nil {
+						log.Fatal(err)
+					}
 				}
 			} else if action == utils.CALLBACK_SELECT {
 				if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					// user clicks on a year
 					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
 						utils.CALLBACK_CALENDAR_SELECT_MONTH,
+						replyMarkup,
+					)
+					if _, err := bot.Request(editedMessage); err != nil {
+						log.Fatal(err)
+					}
+				} else if step == utils.CALLBACK_CALENDAR_SELECT_DAY {
+					// user clicks on a month
+					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data)
+					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+						update.CallbackQuery.Message.Chat.ID,
+						update.CallbackQuery.Message.MessageID,
+						utils.CALLBACK_CALENDAR_SELECT_DAY,
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
