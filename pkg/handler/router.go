@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -65,15 +64,16 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		msg.Text = utils.SUPPORT_MESSAGE
 	case "remind":
 		reminder := schemas.Reminder{
-			Id:             uuid.New().String(),
-			ChatId:         update.Message.Chat.ID,
-			FromUserId:     update.Message.From.ID,
-			FileId:         "",
-			Timezone:       "Asia/Singapore",
-			Frequency:      "",
-			Time:           "",
-			ReminderText:   "",
-			InConstruction: true,
+			Id:              uuid.New().String(),
+			ChatId:          update.Message.Chat.ID,
+			FromUserId:      update.Message.From.ID,
+			FileId:          "",
+			Timezone:        "Asia/Singapore",
+			Frequency:       "",
+			Time:            "",
+			ReminderText:    "",
+			InConstruction:  true,
+			NextTriggerTime: "",
 		}
 		// delete previous reminders in construction to create a new one
 		err := reminder.DeleteReminderInConstruction()
@@ -181,10 +181,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
 					if reminderInConstruction != nil && (reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY) {
 						_, _, selectedYear, selectedMonth, selectedDay := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
-						reminderTime := strings.Split(reminderInConstruction.Time, ":")
-						reminderHour, _ := strconv.Atoi(reminderTime[0])
-						reminderMinute, _ := strconv.Atoi(reminderTime[1])
-						currentDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, time.UTC)
+						reminderHour, reminderMinute := utils.ParseReminderTime(reminderInConstruction.Time)
+						tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+						currentDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, time.UTC).In(tz)
 
 						replyMessageText := fmt.Sprintf("✅ Reminder set for %v", currentDate.Format(utils.DATE_AND_TIME_FORMAT))
 						if reminderInConstruction.Frequency == utils.REMINDER_ONCE {

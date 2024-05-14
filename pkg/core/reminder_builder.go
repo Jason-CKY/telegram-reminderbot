@@ -25,15 +25,19 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			log.Fatal(err)
 		}
 	} else if reminderInConstruction.Time == "" {
-		time := update.Message.Text
-		if !utils.IsValidTime(time) {
+		reminderTime := update.Message.Text
+		if !utils.IsValidTime(reminderTime) {
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Failed to parse time. Please enter time again.")
 			msg.ReplyToMessageID = update.Message.MessageID
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
 		} else {
-			reminderInConstruction.Time = time
+			t := time.Now()
+			hour, minute := utils.ParseReminderTime(reminderTime)
+			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+			utcTime := time.Date(t.Year(), t.Month(), t.Day(), hour, minute, 0, 0, tz).UTC()
+			reminderInConstruction.Time = fmt.Sprintf("%v", utcTime.Format(utils.TIME_ONLY_FORMAT))
 			err := reminderInConstruction.Update()
 			if err != nil {
 				log.Fatal(err)
@@ -82,9 +86,9 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
-
 		case utils.REMINDER_DAILY:
 			reminderInConstruction.Frequency = update.Message.Text
+			// reminderInConstruction.NextTriggerTime =
 			reminderInConstruction.InConstruction = false
 			err := reminderInConstruction.Update()
 			if err != nil {
@@ -199,6 +203,5 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				log.Fatal(err)
 			}
 		}
-
 	}
 }

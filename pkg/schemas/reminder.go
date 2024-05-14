@@ -3,23 +3,27 @@ package schemas
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 )
 
 type Reminder struct {
-	Id             string `json:"id"`
-	ChatId         int64  `json:"chat_id"`
-	FromUserId     int64  `json:"from_user_id"`
-	FileId         string `json:"file_id"`
-	Timezone       string `json:"timezone"`
-	Frequency      string `json:"frequency"`
-	Time           string `json:"time"`
-	ReminderText   string `json:"reminder_text"`
-	InConstruction bool   `json:"in_construction"`
+	Id              string `json:"id"`
+	ChatId          int64  `json:"chat_id"`
+	FromUserId      int64  `json:"from_user_id"`
+	FileId          string `json:"file_id"`
+	Timezone        string `json:"timezone"`
+	Frequency       string `json:"frequency"`
+	Time            string `json:"time"`
+	ReminderText    string `json:"reminder_text"`
+	InConstruction  bool   `json:"in_construction"`
+	NextTriggerTime string `json:"next_trigger_time"`
 }
 
 func (reminder Reminder) Create() error {
@@ -149,6 +153,23 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	}
 
 	return nil
+}
+
+func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
+	// TODO: calculate the next trigger time, in the user's timezone
+	frequencyText := strings.Split(reminder.Frequency, "-")
+	frequency := frequencyText[0]
+	switch {
+	case frequency == utils.REMINDER_ONCE:
+
+	case frequency == utils.REMINDER_DAILY:
+	case frequency == utils.REMINDER_WEEKLY:
+	case frequency == utils.REMINDER_MONTHLY:
+	case frequency == utils.REMINDER_YEARLY:
+	default:
+		return time.Now(), errors.New("invalid frequency")
+	}
+	return time.Now(), nil
 }
 
 func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error) {

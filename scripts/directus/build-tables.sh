@@ -51,3 +51,8 @@ curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"type":"boolean","meta":{"interface":"boolean","special":["cast-boolean"],"required":true},"field":"in_construction","schema":{"default_value":true}}' \
     $DIRECTUS_URL/fields/reminder \
+
+curl -X POST -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"type":"dateTime","meta":{"interface":"datetime","special":null,"required":false,"options":{"includeSeconds":true}},"field":"next_trigger_time"}' \
+    $DIRECTUS_URL/fields/reminder \

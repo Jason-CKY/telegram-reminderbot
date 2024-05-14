@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -64,4 +65,11 @@ func DaysInMonth(t time.Time) int {
 	t = time.Date(t.Year(), t.Month(), 32, 0, 0, 0, 0, time.UTC)
 	daysInMonth := 32 - t.Day()
 	return daysInMonth
+}
+
+func ParseReminderTime(reminderTime string) (int, int) {
+	t := strings.Split(reminderTime, ":")
+	hour, _ := strconv.Atoi(t[0])
+	minute, _ := strconv.Atoi(t[1])
+	return hour, minute
 }
