@@ -31,13 +31,13 @@ const REMINDER_MONTHLY = "Monthly"
 const REMINDER_YEARLY = "Yearly"
 
 var DAY_OF_WEEK = map[string]int{
+	"Sunday":    0,
 	"Monday":    1,
 	"Tuesday":   2,
 	"Wednesday": 3,
 	"Thursday":  4,
 	"Friday":    5,
 	"Saturday":  6,
-	"Sunday":    7,
 }
 
 const CALLBACK_NO_ACTION = "n"

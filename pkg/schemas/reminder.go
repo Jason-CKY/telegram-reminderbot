@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -161,15 +162,54 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 	frequency := frequencyText[0]
 	switch {
 	case frequency == utils.REMINDER_ONCE:
-
+		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), time.UTC)
+		if err != nil {
+			return time.Now(), err
+		}
+		return triggerTime, nil
 	case frequency == utils.REMINDER_DAILY:
+		currentTime := time.Now().UTC()
+		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, time.UTC)
+		if currentTime.After(triggerTime) {
+			return triggerTime.Add(24 * time.Hour), nil
+		}
+		return triggerTime, nil
 	case frequency == utils.REMINDER_WEEKLY:
+		reminderWeekday, _ := strconv.Atoi(frequencyText[1])
+		currentTime := time.Now().UTC()
+		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, time.UTC)
+
+		reminderTz, _ := time.LoadLocation(reminder.Timezone)
+		if reminderWeekday != int(triggerTime.In(reminderTz).Weekday()) || currentTime.After(triggerTime) {
+			return triggerTime.Add(7 * 24 * time.Hour), nil
+		}
+		return triggerTime, nil
 	case frequency == utils.REMINDER_MONTHLY:
+		reminderDay, _ := strconv.Atoi(frequencyText[1])
+		currentTime := time.Now().UTC()
+		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), reminderDay, reminderHour, reminderMinute, 0, 0, time.UTC)
+
+		if currentTime.After(triggerTime) {
+			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, time.UTC), nil
+		}
+		return triggerTime, nil
 	case frequency == utils.REMINDER_YEARLY:
+		t, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), time.UTC)
+		if err != nil {
+			return time.Now(), err
+		}
+		currentTime := time.Now().UTC()
+		triggerTime := time.Date(currentTime.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC)
+		if currentTime.After(triggerTime) {
+			return time.Date(currentTime.Year()+1, t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC), nil
+		}
+		return triggerTime, nil
 	default:
 		return time.Now(), errors.New("invalid frequency")
 	}
-	return time.Now(), nil
 }
 
 func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error) {
