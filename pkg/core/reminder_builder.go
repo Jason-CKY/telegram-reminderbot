@@ -40,7 +40,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Once-off reminder or recurring reminder?")
 			msg.ReplyToMessageID = update.Message.MessageID
-			msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+			msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(utils.REMINDER_ONCE),
 					tgbotapi.NewKeyboardButton(utils.REMINDER_DAILY),
@@ -109,7 +109,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Which day of week do you want to set your weekly reminder?")
 
-			msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(
+			msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(time.Monday.String()),
 					tgbotapi.NewKeyboardButton(time.Tuesday.String()),
@@ -166,6 +166,8 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
+		default:
+			return
 		}
 	} else if reminderInConstruction.Frequency == utils.REMINDER_WEEKLY {
 		val, ok := utils.DAY_OF_WEEK[update.Message.Text]

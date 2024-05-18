@@ -89,7 +89,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 		// Reply to user message, with keyboard commands to cancel and placeholder text to enter reminder text
 		msg.Text = utils.REMINDER_BUILDER_MESSAGE
-		cancelKeyboard := tgbotapi.NewReplyKeyboard(
+		cancelKeyboard := tgbotapi.NewOneTimeReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 			),
@@ -219,18 +219,189 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			}
 		}
 	} else if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
-		if update.CallbackQuery.Data == utils.RENEW_REMINDER_CANCEL {
+		reminderText := update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)]
+		tz, err := time.LoadLocation("Asia/Singapore")
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch update.CallbackQuery.Data {
+		case utils.RENEW_REMINDER_15M:
+			nextTriggerTime := time.Now().In(tz).Add(15 * time.Minute)
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
+				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  false,
+				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
 			editedMessage := tgbotapi.NewEditMessageText(
 				update.CallbackQuery.Message.Chat.ID,
 				update.CallbackQuery.Message.MessageID,
-				update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)],
+				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 			)
 			if _, err := bot.Request(editedMessage); err != nil {
 				log.Fatal(err)
 			}
+		case utils.RENEW_REMINDER_30M:
+			nextTriggerTime := time.Now().In(tz).Add(30 * time.Minute)
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
+				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  false,
+				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		case utils.RENEW_REMINDER_1H:
+			nextTriggerTime := time.Now().In(tz).Add(1 * time.Hour)
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
+				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  false,
+				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		case utils.RENEW_REMINDER_3H:
+			nextTriggerTime := time.Now().In(tz).Add(3 * time.Hour)
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
+				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  false,
+				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		case utils.RENEW_REMINDER_1D:
+			nextTriggerTime := time.Now().In(tz).Add(24 * time.Hour)
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
+				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  false,
+				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		case utils.RENEW_REMINDER_CUSTOM:
+			reminder := schemas.Reminder{
+				Id:              uuid.New().String(),
+				ChatId:          update.CallbackQuery.Message.Chat.ID,
+				FromUserId:      update.CallbackQuery.From.ID,
+				FileId:          "",
+				Timezone:        "Asia/Singapore",
+				Frequency:       "",
+				Time:            "",
+				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
+				InConstruction:  true,
+				NextTriggerTime: "",
+			}
+			err = reminder.Create()
+			if err != nil {
+				log.Fatal(err)
+			}
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				reminderText,
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+			newMsg := tgbotapi.NewMessage(
+				update.CallbackQuery.Message.Chat.ID,
+				fmt.Sprintf("@%v enter reminder time in <HH>:<MM> format.", update.CallbackQuery.From.UserName),
+			)
+			newMsg.ReplyMarkup = tgbotapi.ForceReply{
+				ForceReply: true,
+				Selective:  true,
+			}
+			if _, err := bot.Request(newMsg); err != nil {
+				log.Fatal(err)
+			}
+		case utils.RENEW_REMINDER_CANCEL:
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				reminderText,
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+		default:
 			return
 		}
-		// TODO: get the chat ID and reminder text from update.CallbackQuery.Message
-		// TODO compare the callback data and create a new reminder depending on the button pressed
 	}
 }
