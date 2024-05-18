@@ -30,7 +30,7 @@ air
 - [X] Finish flow for monthly reminders
 - [X] Finish the flow for making once-off reminder
 - [X] Finish flow for yearly reminders
-- [ ] Set separate go-routine to check if any reminder is due
+- [X] Set separate go-routine to check if any reminder is due
 - [ ] option to renew reminders when they are triggered
 - [ ] Handle group chat settings
 - [ ] Handle listing and deleting reminders
