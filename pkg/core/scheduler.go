@@ -19,7 +19,7 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 		}
 		for i := 0; i < len(dueReminders); i++ {
 			reminder := dueReminders[i]
-			msg := tgbotapi.NewMessage(reminder.ChatId, fmt.Sprintf("🗓%v\n\nRemind me again in:", reminder.ReminderText))
+			msg := tgbotapi.NewMessage(reminder.ChatId, fmt.Sprintf("🗓%v%v", reminder.ReminderText, utils.RENEW_REMINDER_TEXT))
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
 					tgbotapi.NewInlineKeyboardButtonData("15m", utils.RENEW_REMINDER_15M),

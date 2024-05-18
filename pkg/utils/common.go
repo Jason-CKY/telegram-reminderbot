@@ -67,6 +67,7 @@ const DATE_AND_TIME_FORMAT = "Mon, 02 Jan 2006 15:04:05"
 const DATE_AND_TIME_FORMAT_WITHOUT_YEAR = "02 Jan 15:04:05"
 const DIRECTUS_DATETIME_FORMAT = "2006-01-02T15:04:05"
 
+const RENEW_REMINDER_TEXT = "\n\nRemind me again in:"
 const RENEW_REMINDER_15M = "renew-15m"
 const RENEW_REMINDER_30M = "renew-30m"
 const RENEW_REMINDER_1H = "renew-1h"

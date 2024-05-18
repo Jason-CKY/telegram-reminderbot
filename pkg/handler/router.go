@@ -218,5 +218,19 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				}
 			}
 		}
+	} else if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
+		if update.CallbackQuery.Data == utils.RENEW_REMINDER_CANCEL {
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)],
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+		// TODO: get the chat ID and reminder text from update.CallbackQuery.Message
+		// TODO compare the callback data and create a new reminder depending on the button pressed
 	}
 }
