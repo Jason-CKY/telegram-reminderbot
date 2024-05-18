@@ -96,17 +96,9 @@ func (reminder Reminder) DeleteById() error {
 		return httpErr
 	}
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
-	if res.StatusCode != 200 {
+	if res.StatusCode != 204 {
 		return fmt.Errorf("error deleting reminder in directus: %v", res.Status)
 	}
-	var reminderResponse map[string]Reminder
-	jsonErr := json.Unmarshal(body, &reminderResponse)
-	// error handling for json unmarshaling
-	if jsonErr != nil {
-		return jsonErr
-	}
-
 	return nil
 }
 
@@ -185,12 +177,16 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 		for reminderWeekday != int(triggerTime.In(tz).Weekday()) {
 			triggerTime = triggerTime.Add(24 * time.Hour)
 		}
+		if currentTime.After(triggerTime) {
+			triggerTime = triggerTime.Add(7 * 24 * time.Hour)
+		}
+
 		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_MONTHLY:
 		reminderDay, _ := strconv.Atoi(frequencyText[1])
 		currentTime := time.Now().In(tz)
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
-		triggerTime := time.Date(currentTime.Year(), time.February, reminderDay, reminderHour, reminderMinute, 0, 0, tz)
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), reminderDay, reminderHour, reminderMinute, 0, 0, tz)
 
 		if currentTime.After(triggerTime) {
 			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, tz).In(time.UTC), nil
