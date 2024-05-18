@@ -24,10 +24,13 @@ func GetCallbackCalendarData(action string, step string, year int, month int, da
 	return fmt.Sprintf("cbcal_%v_%v_%v_%v_%v", action, step, year, month, day)
 }
 
-func BuildYearCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup {
+func BuildYearCalendarWidget(callbackData string, userTimezone *time.Location) tgbotapi.InlineKeyboardMarkup {
 	_, _, minYear, _, _ := SplitCallbackCalendarData(callbackData)
 	maxYear := minYear + 3
 	currentYear := time.Now().Year()
+	if userTimezone != nil {
+		currentYear = time.Now().In(userTimezone).Year()
+	}
 
 	var yearButtons []tgbotapi.InlineKeyboardButton
 	var buttons [][]tgbotapi.InlineKeyboardButton
@@ -82,11 +85,15 @@ func BuildYearCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup 
 	return replyMarkup
 }
 
-func BuildMonthCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup {
+func BuildMonthCalendarWidget(callbackData string, userTimezone *time.Location) tgbotapi.InlineKeyboardMarkup {
 	_, _, selectedYear, _, _ := SplitCallbackCalendarData(callbackData)
 	currentMonth := time.Now().Month()
 	currentYear := time.Now().Year()
 
+	if userTimezone != nil {
+		currentMonth = time.Now().In(userTimezone).Month()
+		currentYear = time.Now().In(userTimezone).Year()
+	}
 	var monthButtons []tgbotapi.InlineKeyboardButton
 	var buttons [][]tgbotapi.InlineKeyboardButton
 
@@ -140,10 +147,14 @@ func BuildMonthCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup
 	return replyMarkup
 }
 
-func BuildDayCalendarWidget(callbackData string) tgbotapi.InlineKeyboardMarkup {
+func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tgbotapi.InlineKeyboardMarkup {
 	_, _, selectedYear, selectedMonth, _ := SplitCallbackCalendarData(callbackData)
 	selectedDate := time.Date(selectedYear, time.Month(selectedMonth), 1, 0, 0, 0, 0, time.UTC)
 	currentDate := time.Now()
+
+	if userTimezone != nil {
+		currentDate = time.Now().In(userTimezone)
+	}
 
 	var dayButtons []tgbotapi.InlineKeyboardButton
 	var buttons [][]tgbotapi.InlineKeyboardButton

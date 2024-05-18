@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type Reminder struct {
@@ -158,62 +159,58 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 
 func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 	// calculate the next trigger time, in the user's timezone
+	log.Info("test1")
+	tz, _ := time.LoadLocation(reminder.Timezone)
+	log.Info("test2")
 	frequencyText := strings.Split(reminder.Frequency, "-")
+	log.Info(frequencyText)
 	frequency := frequencyText[0]
 	switch {
 	case frequency == utils.REMINDER_ONCE:
-		tz, _ := time.LoadLocation(reminder.Timezone)
 		// reminderTime stored in db is in UTC, while the date string is in user's timezone, so we need to correct that
-		timezoneAdjustedTimeString := utils.ConvertReminderTimeFromUTCToUserTimezone(reminder.Time, tz)
-		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], timezoneAdjustedTimeString), tz)
+		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), tz)
 		if err != nil {
 			return time.Now(), err
 		}
 		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_DAILY:
-		// TODO: Test with edge cases and fix timezone issues
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
-		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, time.UTC)
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, tz).In(time.UTC)
 		if currentTime.After(triggerTime) {
 			return triggerTime.Add(24 * time.Hour), nil
 		}
 		return triggerTime, nil
 	case frequency == utils.REMINDER_WEEKLY:
-		// TODO: Test with edge cases and fix timezone issues
 		reminderWeekday, _ := strconv.Atoi(frequencyText[1])
-		currentTime := time.Now().UTC()
+		currentTime := time.Now().In(tz)
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
-		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, time.UTC)
-
-		reminderTz, _ := time.LoadLocation(reminder.Timezone)
-		if reminderWeekday != int(triggerTime.In(reminderTz).Weekday()) || currentTime.After(triggerTime) {
-			return triggerTime.Add(7 * 24 * time.Hour), nil
+		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, tz)
+		for reminderWeekday != int(triggerTime.In(tz).Weekday()) {
+			triggerTime = triggerTime.Add(24 * time.Hour)
 		}
-		return triggerTime, nil
+		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_MONTHLY:
-		// TODO: Test with edge cases and fix timezone issues
 		reminderDay, _ := strconv.Atoi(frequencyText[1])
-		currentTime := time.Now().UTC()
+		currentTime := time.Now().In(tz)
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
-		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), reminderDay, reminderHour, reminderMinute, 0, 0, time.UTC)
+		triggerTime := time.Date(currentTime.Year(), time.February, reminderDay, reminderHour, reminderMinute, 0, 0, tz)
 
 		if currentTime.After(triggerTime) {
-			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, time.UTC), nil
+			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, tz).In(time.UTC), nil
 		}
-		return triggerTime, nil
+		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_YEARLY:
-		// TODO: Test with edge cases and fix timezone issues
-		t, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), time.UTC)
+		t, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), tz)
 		if err != nil {
 			return time.Now(), err
 		}
-		currentTime := time.Now().UTC()
-		triggerTime := time.Date(currentTime.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC)
+		currentTime := time.Now().In(tz)
+		triggerTime := time.Date(currentTime.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz)
 		if currentTime.After(triggerTime) {
-			return time.Date(currentTime.Year()+1, t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC), nil
+			return time.Date(currentTime.Year()+1, t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz).In(time.UTC), nil
 		}
-		return triggerTime, nil
+		return triggerTime.In(time.UTC), nil
 	default:
 		return time.Now(), errors.New("invalid frequency")
 	}

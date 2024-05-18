@@ -45,7 +45,6 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			}
 		}
 	} else if reminderInConstruction != nil {
-		// TOOD: https://github.com/Jason-CKY/telegram-reminderbot/blob/main/app/menu.py#L61
 		core.BuildReminder(reminderInConstruction, update, bot)
 	}
 }
@@ -112,13 +111,15 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 }
 
 func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	if strings.HasPrefix(update.CallbackQuery.Data, "cbcal") {
+	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
+	if strings.HasPrefix(update.CallbackQuery.Data, "cbcal") && reminderInConstruction != nil {
 		action, step, _, _, _ := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
+		tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
 		if action != utils.CALLBACK_NO_ACTION {
 			if action == utils.CALLBACK_GOTO {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
 					// user clicks on navigation button on year view
-					replyMarkup := core.BuildYearCalendarWidget(update.CallbackQuery.Data)
+					replyMarkup := core.BuildYearCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -130,7 +131,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					}
 				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
 					// user clicks on navigation button on month view
-					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
+					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -142,7 +143,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					}
 				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
 					// user clicks on navigation button on day view
-					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data)
+					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -156,7 +157,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			} else if action == utils.CALLBACK_SELECT {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
 					// user clicks on a year
-					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data)
+					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -168,7 +169,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					}
 				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
 					// user clicks on a month
-					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data)
+					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 						update.CallbackQuery.Message.Chat.ID,
 						update.CallbackQuery.Message.MessageID,
@@ -180,13 +181,10 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 					}
 				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
 					// user clicks on a day
-					reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
-					if reminderInConstruction != nil && (reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY) {
+					if reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY {
 						_, _, selectedYear, selectedMonth, selectedDay := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
-						tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
 						// reminderTime stored in db is in UTC, while the date string is in user's timezone, so we need to correct that
-						timezoneAdjustedTimeString := utils.ConvertReminderTimeFromUTCToUserTimezone(reminderInConstruction.Time, tz)
-						reminderHour, reminderMinute := utils.ParseReminderTime(timezoneAdjustedTimeString)
+						reminderHour, reminderMinute := utils.ParseReminderTime(reminderInConstruction.Time)
 						reminderDate := time.Date(selectedYear, time.Month(selectedMonth), selectedDay, reminderHour, reminderMinute, 0, 0, tz)
 
 						replyMessageText := fmt.Sprintf("✅ Reminder set for %v", reminderDate.Format(utils.DATE_AND_TIME_FORMAT))

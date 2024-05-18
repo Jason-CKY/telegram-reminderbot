@@ -33,11 +33,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				log.Fatal(err)
 			}
 		} else {
-			t := time.Now()
-			hour, minute := utils.ParseReminderTime(reminderTime)
-			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
-			utcTime := time.Date(t.Year(), t.Month(), t.Day(), hour, minute, 0, 0, tz).UTC()
-			reminderInConstruction.Time = fmt.Sprintf("%v", utcTime.Format(utils.TIME_ONLY_FORMAT))
+			reminderInConstruction.Time = reminderTime
 			err := reminderInConstruction.Update()
 			if err != nil {
 				log.Fatal(err)
@@ -81,8 +77,9 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			// Monthly Calendar widget
 			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
 			msg.ReplyToMessageID = update.Message.MessageID
-			minYear := time.Now().Year()
-			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0))
+			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+			minYear := time.Now().In(tz).Year()
+			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0), tz)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
@@ -123,6 +120,10 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				),
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(time.Friday.String()),
+					tgbotapi.NewKeyboardButton(time.Saturday.String()),
+				),
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(time.Sunday.String()),
 					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 				),
 			)
@@ -159,8 +160,9 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			// Monthly Calendar widget
 			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
 			msg.ReplyToMessageID = update.Message.MessageID
-			minYear := time.Now().Year()
-			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0))
+			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+			minYear := time.Now().In(tz).Year()
+			msg.ReplyMarkup = BuildMonthCalendarWidget(GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear, 0, 0), tz)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
@@ -187,13 +189,12 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 		}
 	} else if reminderInConstruction.Frequency == utils.REMINDER_MONTHLY {
-		// day_of_month := update.Message.Text
 		day_of_month, err := strconv.Atoi(update.Message.Text)
 		if err != nil {
 			return
 		}
 		if day_of_month >= 1 && day_of_month <= 31 {
-			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_WEEKLY, day_of_month)
+			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_MONTHLY, day_of_month)
 			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
 			if err != nil {
 				log.Fatal(err)
@@ -206,7 +207,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, fmt.Sprintf("✅ Reminder set for every %v of every month at %v", utils.ParseDayOfMonth(day_of_month), reminderInConstruction.Time))
 			msg.ReplyToMessageID = update.Message.MessageID
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			// msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
