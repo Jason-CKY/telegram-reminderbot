@@ -41,15 +41,8 @@ func (reminder Reminder) Create() error {
 		return httpErr
 	}
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
 		return fmt.Errorf("error inserting reminder to directus: %v", res.Status)
-	}
-	var reminderResponse map[string]Reminder
-	jsonErr := json.Unmarshal(body, &reminderResponse)
-	// error handling for json unmarshaling
-	if jsonErr != nil {
-		return jsonErr
 	}
 
 	return nil
@@ -69,15 +62,8 @@ func (reminder Reminder) Update() error {
 		return httpErr
 	}
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
 		return fmt.Errorf("error updating reminder to directus: %v", res.Status)
-	}
-	var reminderResponse map[string]Reminder
-	jsonErr := json.Unmarshal(body, &reminderResponse)
-	// error handling for json unmarshaling
-	if jsonErr != nil {
-		return jsonErr
 	}
 
 	return nil

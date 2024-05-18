@@ -16,17 +16,25 @@ import (
 
 func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if update.Message != nil { // If we got a message
+		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.Message.Chat.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
 		if update.Message.IsCommand() {
-			HandleCommand(update, bot)
+			HandleCommand(update, bot, chatSettings)
 		} else {
-			HandleMessage(update, bot)
+			HandleMessage(update, bot, chatSettings)
 		}
 	} else if update.CallbackQuery != nil {
-		HandleCallbackQuery(update, bot)
+		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.CallbackQuery.Message.Chat.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		HandleCallbackQuery(update, bot, chatSettings)
 	}
 }
 
-func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *schemas.ChatSettings) {
 	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.Message.Chat.ID, update.Message.From.ID)
 
 	if update.Message.Text == utils.CANCEL_MESSAGE {
@@ -44,9 +52,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				log.Fatal(err)
 			}
 		}
-	} else if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE {
-		// && chatSettings.updating == true
-		// update chat settings to this timezone
+	} else if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE && chatSettings.Updating {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CHANGE_TIMEZONE_MESSAGE)
 		cancelKeyboard := tgbotapi.NewOneTimeReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
@@ -65,7 +71,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	}
 }
 
-func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *schemas.ChatSettings) {
 
 	// Create a new MessageConfig. We don't have text yet,
 	// so we leave it empty.
@@ -85,7 +91,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			ChatId:          update.Message.Chat.ID,
 			FromUserId:      update.Message.From.ID,
 			FileId:          "",
-			Timezone:        utils.DEFAULT_TIMEZONE,
+			Timezone:        chatSettings.Timezone,
 			Frequency:       "",
 			Time:            "",
 			ReminderText:    "",
@@ -116,8 +122,8 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		// TODO
 		msg.Text = "list command handling"
 	case "settings":
-		tz, _ := time.LoadLocation(utils.DEFAULT_TIMEZONE)
-		msg.Text = fmt.Sprintf("<b>Your current settings:</b>\n\n- timezone: %v\n- local time: %v", utils.DEFAULT_TIMEZONE, time.Now().In(tz).Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
+		tz, _ := time.LoadLocation(chatSettings.Timezone)
+		msg.Text = fmt.Sprintf("<b>Your current settings:</b>\n\n- timezone: %v\n- local time: %v", chatSettings.Timezone, time.Now().In(tz).Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
 		msg.ParseMode = "html"
 		msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
@@ -134,7 +140,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	}
 }
 
-func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *schemas.ChatSettings) {
 	reminderInConstruction, _ := schemas.GetReminderInConstruction(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.From.ID)
 	if strings.HasPrefix(update.CallbackQuery.Data, "cbcal") && reminderInConstruction != nil {
 		action, step, _, _, _ := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
@@ -244,7 +250,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 	} else if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
 		reminderText := update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)]
-		tz, err := time.LoadLocation(utils.DEFAULT_TIMEZONE)
+		tz, err := time.LoadLocation(chatSettings.Timezone)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -256,7 +262,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -282,7 +288,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -308,7 +314,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -334,7 +340,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -360,7 +366,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -385,7 +391,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        utils.DEFAULT_TIMEZONE,
+				Timezone:        chatSettings.Timezone,
 				Frequency:       "",
 				Time:            "",
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),

@@ -28,3 +28,26 @@ curl -X POST \
     -d '{"role":null,"collection":"reminder","action":"delete","fields":"*","permissions":{},"validation":{}}' \
     $DIRECTUS_URL/permissions
 
+curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"role":null,"collection":"chat_settings","action":"create","fields":"*","permissions":{},"validation":{}}' \
+    $DIRECTUS_URL/permissions
+
+curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"role":null,"collection":"chat_settings","action":"read","fields":"*","permissions":{},"validation":{}}' \
+    $DIRECTUS_URL/permissions
+
+curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"role":null,"collection":"chat_settings","action":"update","fields":"*","permissions":{},"validation":{}}' \
+    $DIRECTUS_URL/permissions
+
+curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"role":null,"collection":"chat_settings","action":"delete","fields":"*","permissions":{},"validation":{}}' \
+    $DIRECTUS_URL/permissions
