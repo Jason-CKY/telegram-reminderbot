@@ -24,6 +24,8 @@ const CANCEL_MESSAGE string = `🚫 Cancel`
 
 const CANCEL_OPERATION_MESSAGE string = `Operation cancelled.`
 
+const DEFAULT_TIMEZONE = "Asia/Singapore"
+
 const REMINDER_ONCE = "Once"
 const REMINDER_DAILY = "Daily"
 const REMINDER_WEEKLY = "Weekly"
@@ -68,11 +70,14 @@ const DATE_AND_TIME_FORMAT_WITHOUT_YEAR = "02 Jan 15:04:05"
 const DIRECTUS_DATETIME_FORMAT = "2006-01-02T15:04:05"
 
 const REMINDER_PREFIX = "🗓"
-const RENEW_REMINDER_15M = "renew-15m"
-const RENEW_REMINDER_30M = "renew-30m"
-const RENEW_REMINDER_1H = "renew-1h"
-const RENEW_REMINDER_3H = "renew-3h"
-const RENEW_REMINDER_1D = "renew-1d"
-const RENEW_REMINDER_CUSTOM = "renew-custom"
-const RENEW_REMINDER_CANCEL = "renew-cancel"
+const RENEW_REMINDER_15M = "renew_15m"
+const RENEW_REMINDER_30M = "renew_30m"
+const RENEW_REMINDER_1H = "renew_1h"
+const RENEW_REMINDER_3H = "renew_3h"
+const RENEW_REMINDER_1D = "renew_1d"
+const RENEW_REMINDER_CUSTOM = "renew_time"
+const RENEW_REMINDER_CANCEL = "renew_cancel"
 const RENEW_REMINDER_TEXT = "\n\nRemind me again in:"
+
+const SETTINGS_CHANGE_TIMEZONE = "🕐 Change time zone"
+const CHANGE_TIMEZONE_MESSAGE = "Please type the timezone that you want to change to. For a list of all supported timezones, please click here (https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568)"

@@ -44,6 +44,22 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				log.Fatal(err)
 			}
 		}
+	} else if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE {
+		// && chatSettings.updating == true
+		// update chat settings to this timezone
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CHANGE_TIMEZONE_MESSAGE)
+		cancelKeyboard := tgbotapi.NewOneTimeReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
+			),
+		)
+		cancelKeyboard.InputFieldPlaceholder = "Enter timezone"
+		msg.ReplyMarkup = cancelKeyboard
+		msg.ReplyToMessageID = update.Message.MessageID
+		if _, err := bot.Send(msg); err != nil {
+			log.Fatal(err)
+		}
+
 	} else if reminderInConstruction != nil {
 		core.BuildReminder(reminderInConstruction, update, bot)
 	}
@@ -69,7 +85,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			ChatId:          update.Message.Chat.ID,
 			FromUserId:      update.Message.From.ID,
 			FileId:          "",
-			Timezone:        "Asia/Singapore",
+			Timezone:        utils.DEFAULT_TIMEZONE,
 			Frequency:       "",
 			Time:            "",
 			ReminderText:    "",
@@ -82,7 +98,6 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			log.Fatal(err)
 		}
 		// create a new reminder
-		log.Infof("Authorized on account %s", bot.Self.UserName)
 		err = reminder.Create()
 		if err != nil {
 			log.Fatal(err)
@@ -98,9 +113,18 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		msg.ReplyMarkup = cancelKeyboard
 		msg.ReplyToMessageID = update.Message.MessageID
 	case "list":
+		// TODO
 		msg.Text = "list command handling"
 	case "settings":
-		msg.Text = "settings command handling"
+		tz, _ := time.LoadLocation(utils.DEFAULT_TIMEZONE)
+		msg.Text = fmt.Sprintf("<b>Your current settings:</b>\n\n- timezone: %v\n- local time: %v", utils.DEFAULT_TIMEZONE, time.Now().In(tz).Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
+		msg.ParseMode = "html"
+		msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
+			tgbotapi.NewKeyboardButtonRow(
+				tgbotapi.NewKeyboardButton(utils.SETTINGS_CHANGE_TIMEZONE),
+				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
+			),
+		)
 	default:
 		return
 	}
@@ -220,7 +244,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		}
 	} else if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
 		reminderText := update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)]
-		tz, err := time.LoadLocation("Asia/Singapore")
+		tz, err := time.LoadLocation(utils.DEFAULT_TIMEZONE)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -232,7 +256,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -258,7 +282,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -284,7 +308,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -310,7 +334,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -336,7 +360,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, nextTriggerTime.Format(utils.DATE_FORMAT)),
 				Time:            nextTriggerTime.Format(utils.TIME_ONLY_FORMAT),
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),
@@ -361,7 +385,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
 				FromUserId:      update.CallbackQuery.From.ID,
 				FileId:          "",
-				Timezone:        "Asia/Singapore",
+				Timezone:        utils.DEFAULT_TIMEZONE,
 				Frequency:       "",
 				Time:            "",
 				ReminderText:    strings.TrimPrefix(reminderText, utils.REMINDER_PREFIX),

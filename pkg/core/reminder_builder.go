@@ -209,7 +209,6 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, fmt.Sprintf("✅ Reminder set for every %v of every month at %v", utils.ParseDayOfMonth(day_of_month), reminderInConstruction.Time))
 			msg.ReplyToMessageID = update.Message.MessageID
-			// msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
