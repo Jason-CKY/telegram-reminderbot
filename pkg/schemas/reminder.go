@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type Reminder struct {
@@ -159,11 +158,8 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 
 func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 	// calculate the next trigger time, in the user's timezone
-	log.Info("test1")
 	tz, _ := time.LoadLocation(reminder.Timezone)
-	log.Info("test2")
 	frequencyText := strings.Split(reminder.Frequency, "-")
-	log.Info(frequencyText)
 	frequency := frequencyText[0]
 	switch {
 	case frequency == utils.REMINDER_ONCE:
