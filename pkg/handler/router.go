@@ -39,6 +39,17 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 
 	if update.Message.Text == utils.CANCEL_MESSAGE {
 		if reminderInConstruction != nil {
+			err := reminderInConstruction.DeleteById()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		chatSettings.Updating = false
+		err := chatSettings.Update()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if reminderInConstruction != nil {
 			err := reminderInConstruction.DeleteReminderInConstruction()
 			if err != nil {
 				log.Fatal(err)
@@ -52,18 +63,44 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 				log.Fatal(err)
 			}
 		}
-	} else if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE && chatSettings.Updating {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CHANGE_TIMEZONE_MESSAGE)
-		cancelKeyboard := tgbotapi.NewOneTimeReplyKeyboard(
-			tgbotapi.NewKeyboardButtonRow(
-				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
-			),
-		)
-		cancelKeyboard.InputFieldPlaceholder = "Enter timezone"
-		msg.ReplyMarkup = cancelKeyboard
-		msg.ReplyToMessageID = update.Message.MessageID
-		if _, err := bot.Send(msg); err != nil {
-			log.Fatal(err)
+	} else if chatSettings.Updating {
+		if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CHANGE_TIMEZONE_MESSAGE)
+			cancelKeyboard := tgbotapi.NewOneTimeReplyKeyboard(
+				tgbotapi.NewKeyboardButtonRow(
+					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
+				),
+			)
+			cancelKeyboard.InputFieldPlaceholder = "Enter timezone"
+			msg.ReplyMarkup = cancelKeyboard
+			msg.ReplyToMessageID = update.Message.MessageID
+			msg.ParseMode = "html"
+			if _, err := bot.Send(msg); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			_, err := time.LoadLocation(update.Message.Text)
+			if err != nil {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.INVALID_TIMEZONE_MESSAGE)
+				msg.ReplyToMessageID = update.Message.MessageID
+				msg.ParseMode = "html"
+				if _, err := bot.Send(msg); err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				chatSettings.Timezone = update.Message.Text
+				chatSettings.Updating = false
+				err = chatSettings.Update()
+				if err != nil {
+					log.Fatal(err)
+				}
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Timezone has been set")
+				msg.ReplyToMessageID = update.Message.MessageID
+				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+				if _, err := bot.Send(msg); err != nil {
+					log.Fatal(err)
+				}
+			}
 		}
 
 	} else if reminderInConstruction != nil {
@@ -131,6 +168,11 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 			),
 		)
+		chatSettings.Updating = true
+		err := chatSettings.Update()
+		if err != nil {
+			log.Fatal(err)
+		}
 	default:
 		return
 	}

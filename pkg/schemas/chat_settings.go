@@ -13,7 +13,7 @@ import (
 type ChatSettings struct {
 	ChatId   int64  `json:"chat_id"`
 	Timezone string `json:"timezone"`
-	Updating bool   `json:"update"`
+	Updating bool   `json:"updating"`
 }
 
 func (chatSettings ChatSettings) Create() error {
@@ -29,16 +29,17 @@ func (chatSettings ChatSettings) Create() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error inserting chat settings to directus: %v", res.Status)
+		return fmt.Errorf("error inserting chat settings to directus: %v", string(body))
 	}
 
 	return nil
 }
 
 func (chatSettings ChatSettings) Update() error {
-	endpoint := fmt.Sprintf("%v/items/chat_settings", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/chat_settings/%v", utils.DirectusHost, chatSettings.ChatId)
 	reqBody, _ := json.Marshal(chatSettings)
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -50,9 +51,10 @@ func (chatSettings ChatSettings) Update() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error inserting reminder to directus: %v", res.Status)
+		return fmt.Errorf("error updating chat settings to directus: %v", string(body))
 	}
 
 	return nil
@@ -82,7 +84,7 @@ func GetChatSettings(chatId int64) (*ChatSettings, error) {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("error getting chat settings in directus: %v", res.Status)
+		return nil, fmt.Errorf("error getting chat settings in directus: %v", string(body))
 	}
 	var chatSettingsResponse map[string][]ChatSettings
 	jsonErr := json.Unmarshal(body, &chatSettingsResponse)

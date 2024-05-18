@@ -40,9 +40,10 @@ func (reminder Reminder) Create() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error inserting reminder to directus: %v", res.Status)
+		return fmt.Errorf("error inserting reminder to directus: %v", string(body))
 	}
 
 	return nil
@@ -61,9 +62,10 @@ func (reminder Reminder) Update() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return fmt.Errorf("error updating reminder to directus: %v", res.Status)
+		return fmt.Errorf("error updating reminder to directus: %v", string(body))
 	}
 
 	return nil
@@ -81,9 +83,10 @@ func (reminder Reminder) DeleteById() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 204 {
-		return fmt.Errorf("error deleting reminder in directus: %v", res.Status)
+		return fmt.Errorf("error deleting reminder in directus: %v", string(body))
 	}
 	return nil
 }
@@ -116,7 +119,6 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	}`, reminder.ChatId, reminder.FromUserId))
 
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, bytes.NewBuffer(reqBody))
-
 	req.Header.Set("Content-Type", "application/json")
 	if httpErr != nil {
 		return httpErr
@@ -126,9 +128,10 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	if httpErr != nil {
 		return httpErr
 	}
+	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode != 200 && res.StatusCode != 204 {
-		return fmt.Errorf("error deleting reminders in construction: %v", res.Status)
+		return fmt.Errorf("error deleting reminders in construction: %v", string(body))
 	}
 
 	return nil
@@ -229,10 +232,10 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 	if httpErr != nil {
 		return nil, httpErr
 	}
-	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("error searching for reminder in directus: %v", res.Status)
+		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
@@ -281,7 +284,7 @@ func GetDueReminders() ([]Reminder, error) {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("error searching for reminder in directus: %v", res.Status)
+		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)

@@ -68,3 +68,8 @@ curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"type":"string","meta":{"interface":"input","special":null,"required":true},"field":"timezone"}' \
     $DIRECTUS_URL/fields/chat_settings \
+
+curl -X POST -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"type":"boolean","meta":{"interface":"boolean","special":["cast-boolean"]},"field":"updating","schema":{"default_value":false}}' \
+    $DIRECTUS_URL/fields/chat_settings \

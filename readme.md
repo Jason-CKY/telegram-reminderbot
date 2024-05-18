@@ -32,7 +32,7 @@ air
 - [X] Finish flow for yearly reminders
 - [X] Set separate go-routine to check if any reminder is due
 - [X] Option to renew reminders when they are triggered
-- [ ] Handle chat settings  (require separate table to store settings)
+- [X] Handle chat settings  (require separate table to store settings)
 - [ ] Handle listing and deleting reminders
 - [ ] Handle image reminders
 - [ ] Handle group reminders
