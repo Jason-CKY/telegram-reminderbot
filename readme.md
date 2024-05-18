@@ -31,7 +31,8 @@ air
 - [X] Finish the flow for making once-off reminder
 - [X] Finish flow for yearly reminders
 - [X] Set separate go-routine to check if any reminder is due
-- [ ] option to renew reminders when they are triggered
-- [ ] Handle group chat settings
+- [ ] Option to renew reminders when they are triggered
+- [ ] Handle chat settings  (require separate table to store settings)
 - [ ] Handle listing and deleting reminders
 - [ ] Handle image reminders
+- [ ] Handle group settings

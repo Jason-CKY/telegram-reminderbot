@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -18,7 +19,20 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 		}
 		for i := 0; i < len(dueReminders); i++ {
 			reminder := dueReminders[i]
-			msg := tgbotapi.NewMessage(reminder.ChatId, reminder.ReminderText)
+			msg := tgbotapi.NewMessage(reminder.ChatId, fmt.Sprintf("🗓%v\n\nRemind me again in:", reminder.ReminderText))
+			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonData("15m", utils.RENEW_REMINDER_15M),
+					tgbotapi.NewInlineKeyboardButtonData("30m", utils.RENEW_REMINDER_30M),
+					tgbotapi.NewInlineKeyboardButtonData("1h", utils.RENEW_REMINDER_1H),
+					tgbotapi.NewInlineKeyboardButtonData("3h", utils.RENEW_REMINDER_3H),
+					tgbotapi.NewInlineKeyboardButtonData("1d", utils.RENEW_REMINDER_1D),
+				),
+				tgbotapi.NewInlineKeyboardRow(
+					tgbotapi.NewInlineKeyboardButtonData("Enter Time", utils.RENEW_REMINDER_CUSTOM),
+					tgbotapi.NewInlineKeyboardButtonData("Cancel", utils.RENEW_REMINDER_CANCEL),
+				),
+			)
 			if _, err := bot.Send(msg); err != nil {
 				log.Fatal(err)
 			}
