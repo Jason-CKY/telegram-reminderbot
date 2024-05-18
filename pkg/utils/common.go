@@ -64,6 +64,8 @@ const CALENDAR_DAY_NUM_COLS = 7
 
 // format dates in YYYY/MM/DD
 const DATE_FORMAT = "2006/01/02"
+const PRETTY_DATE_FORMAT = "Mon, 02 Jan 2006"
+const PRETTY_DATE_FORMAT_WITHOUT_YEAR = "02 Jan"
 const TIME_ONLY_FORMAT = "15:04"
 const DATE_AND_TIME_FORMAT = "Mon, 02 Jan 2006 15:04:05"
 const DATE_AND_TIME_FORMAT_WITHOUT_YEAR = "02 Jan 15:04:05"
@@ -82,3 +84,6 @@ const RENEW_REMINDER_TEXT = "\n\nRemind me again in:"
 const SETTINGS_CHANGE_TIMEZONE = "🕐 Change time zone"
 const CHANGE_TIMEZONE_MESSAGE = "Please type the timezone that you want to change to. For a list of all supported timezones, please click click <a href=\"https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568\">here</a>"
 const INVALID_TIMEZONE_MESSAGE = "Invalid timezone.\n\nFor a list of all supported timezones, please click <a href=\"https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568\">here</a>"
+
+// list reminder settings
+const MAX_REMINDERS_PER_PAGE = 5

@@ -144,7 +144,6 @@ func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
 	frequency := frequencyText[0]
 	switch {
 	case frequency == utils.REMINDER_ONCE:
-		// reminderTime stored in db is in UTC, while the date string is in user's timezone, so we need to correct that
 		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), tz)
 		if err != nil {
 			return time.Now(), err
@@ -293,5 +292,53 @@ func GetDueReminders() ([]Reminder, error) {
 		return nil, jsonErr
 	}
 
+	return reminderResponse["data"], nil
+}
+
+func ListChatReminders(chatId int64) ([]Reminder, error) {
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"_and": [
+					{
+						"chat_id": {
+							"_eq": "%v"
+						}
+					},
+					{
+						"in_construction": {
+							"_eq": false
+						}
+					}
+				]
+			}
+		}
+	}`, chatId))
+	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("error searching for reminders in directus: %v", string(body))
+	}
+	var reminderResponse map[string][]Reminder
+	jsonErr := json.Unmarshal(body, &reminderResponse)
+	// error handling for json unmarshaling
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	if len(reminderResponse["data"]) == 0 {
+		return nil, nil
+	}
 	return reminderResponse["data"], nil
 }

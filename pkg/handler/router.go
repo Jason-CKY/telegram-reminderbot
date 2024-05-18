@@ -157,7 +157,17 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		msg.ReplyToMessageID = update.Message.MessageID
 	case "list":
 		// TODO
-		msg.Text = "list command handling"
+		chatReminders, err := schemas.ListChatReminders(update.Message.Chat.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(chatReminders) == 0 {
+			msg.Text = "There are no reminders in this chat."
+		} else {
+			listReminderText, listReminderMarkup := core.BuildListReminderMarkup(chatReminders, 1)
+			msg.Text = listReminderText
+			msg.ReplyMarkup = listReminderMarkup
+		}
 	case "settings":
 		tz, _ := time.LoadLocation(chatSettings.Timezone)
 		msg.Text = fmt.Sprintf("<b>Your current settings:</b>\n\n- timezone: %v\n- local time: %v", chatSettings.Timezone, time.Now().In(tz).Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
