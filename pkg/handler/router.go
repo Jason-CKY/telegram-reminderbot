@@ -16,7 +16,7 @@ import (
 
 func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if update.Message != nil { // If we got a message
-		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.Message.Chat.ID)
+		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.Message.Chat.ID, bot)
 		if err != nil {
 			log.Error(err)
 			return
@@ -27,7 +27,7 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			HandleMessage(update, bot, chatSettings)
 		}
 	} else if update.CallbackQuery != nil {
-		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.CallbackQuery.Message.Chat.ID)
+		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.CallbackQuery.Message.Chat.ID, bot)
 		if err != nil {
 			log.Error(err)
 			return
@@ -64,7 +64,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		msg.ReplyToMessageID = update.Message.MessageID
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 		if msg.Text != "" {
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -81,7 +81,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 			msg.ReplyMarkup = cancelKeyboard
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ParseMode = "html"
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -91,7 +91,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.INVALID_TIMEZONE_MESSAGE)
 				msg.ReplyToMessageID = update.Message.MessageID
 				msg.ParseMode = "html"
-				if _, err := bot.Send(msg); err != nil {
+				if _, err := bot.Request(msg); err != nil {
 					log.Error(err)
 					return
 				}
@@ -106,7 +106,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Timezone has been set")
 				msg.ReplyToMessageID = update.Message.MessageID
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-				if _, err := bot.Send(msg); err != nil {
+				if _, err := bot.Request(msg); err != nil {
 					log.Error(err)
 					return
 				}
@@ -119,11 +119,9 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 }
 
 func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *schemas.ChatSettings) {
-
 	// Create a new MessageConfig. We don't have text yet,
 	// so we leave it empty.
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-
 	// Extract the command from the Message.
 	switch update.Message.Command() {
 	case "help":
@@ -206,7 +204,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		return
 	}
 
-	if _, err := bot.Send(msg); err != nil {
+	if _, err := bot.Request(msg); err != nil {
 		log.Error(err)
 		return
 	}

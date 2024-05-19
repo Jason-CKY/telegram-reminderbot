@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type ChatSettings struct {
@@ -100,7 +101,7 @@ func GetChatSettings(chatId int64) (*ChatSettings, error) {
 	return &chatSettingsResponse["data"][0], nil
 }
 
-func InsertChatSettingsIfNotPresent(chatId int64) (*ChatSettings, error) {
+func InsertChatSettingsIfNotPresent(chatId int64, bot *tgbotapi.BotAPI) (*ChatSettings, error) {
 	chatSettings, err := GetChatSettings(chatId)
 	if err != nil {
 		return nil, err
@@ -113,6 +114,13 @@ func InsertChatSettingsIfNotPresent(chatId int64) (*ChatSettings, error) {
 		}
 		err := chatSettings.Create()
 		if err != nil {
+			return nil, err
+		}
+		msg := tgbotapi.NewMessage(
+			chatId,
+			utils.DEFAULT_SETTINGS_MESSAGE,
+		)
+		if _, err := bot.Request(msg); err != nil {
 			return nil, err
 		}
 	}

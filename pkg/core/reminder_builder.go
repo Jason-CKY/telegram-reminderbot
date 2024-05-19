@@ -27,7 +27,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		}
 		msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "enter reminder time in <HH>:<MM> format.")
 		msg.ReplyToMessageID = update.Message.MessageID
-		if _, err := bot.Send(msg); err != nil {
+		if _, err := bot.Request(msg); err != nil {
 			log.Error(err)
 			return
 		}
@@ -36,7 +36,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		if !utils.IsValidTime(reminderTime) {
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Failed to parse time. Please enter time again.")
 			msg.ReplyToMessageID = update.Message.MessageID
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -63,7 +63,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 				),
 			)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -81,7 +81,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "once-off reminder selected.")
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -101,7 +101,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				),
 				tz,
 			)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -122,7 +122,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, fmt.Sprintf("✅ Reminder set for every day at %v", reminderInConstruction.Time))
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -154,7 +154,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				),
 			)
 			msg.ReplyToMessageID = update.Message.MessageID
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -169,7 +169,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Which day of the month do you want to set your monthly reminder? (1-31)")
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -184,7 +184,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "yearly reminder selected.")
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -203,7 +203,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				),
 				tz,
 			)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -236,7 +236,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			)
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
@@ -269,14 +269,14 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 				),
 			)
 			msg.ReplyToMessageID = update.Message.MessageID
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}
 		} else {
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Invalid day of month [1-31]")
 			msg.ReplyToMessageID = update.Message.MessageID
-			if _, err := bot.Send(msg); err != nil {
+			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
 			}

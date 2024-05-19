@@ -65,7 +65,7 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 						tgbotapi.NewInlineKeyboardButtonData("Cancel", utils.RENEW_REMINDER_CANCEL),
 					),
 				)
-				if _, err := bot.Send(msg); err != nil {
+				if _, err := bot.Request(msg); err != nil {
 					log.Error(err)
 					return
 				}
