@@ -34,6 +34,6 @@ air
 - [X] Option to renew reminders when they are triggered
 - [X] Handle chat settings  (require separate table to store settings)
 - [X] Handle listing and deleting reminders
-- [ ] Handle image reminders
+- [X] Handle image reminders
 - [ ] Handle group reminders
 - [ ] Handle group settings
