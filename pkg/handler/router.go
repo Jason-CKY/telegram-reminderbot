@@ -310,7 +310,10 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_ONCE, reminderDate.Format(utils.DATE_FORMAT))
 						} else if reminderInConstruction.Frequency == utils.REMINDER_YEARLY {
 							reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_YEARLY, reminderDate.Format(utils.DATE_FORMAT))
-							replyMessageText = fmt.Sprintf("✅ Reminder set for every year at %v", reminderDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
+							replyMessageText = fmt.Sprintf(
+								"✅ Reminder set for every year at %v",
+								reminderDate.Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR),
+							)
 						}
 
 						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()

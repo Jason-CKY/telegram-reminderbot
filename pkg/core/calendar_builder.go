@@ -65,15 +65,69 @@ func BuildYearCalendarWidget(callbackData string, userTimezone *time.Location) t
 	var navButtons []tgbotapi.InlineKeyboardButton
 	if showBackNavButton {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, minYear-4, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, maxYear+1, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"<<",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					minYear-4,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				" ",
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					0,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					maxYear+1,
+					0,
+					0,
+				),
+			),
 		)
 	} else {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("×", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(" ", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_YEAR, 0, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, maxYear+1, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"×",
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					0,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				" ",
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					0,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					maxYear+1,
+					0,
+					0,
+				),
+			),
 		)
 	}
 
@@ -102,14 +156,26 @@ func BuildMonthCalendarWidget(callbackData string, userTimezone *time.Location) 
 			monthButtons = append(monthButtons,
 				tgbotapi.NewInlineKeyboardButtonData(
 					" ",
-					GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
+					GetCallbackCalendarData(
+						utils.CALLBACK_NO_ACTION,
+						utils.CALLBACK_CALENDAR_STEP_MONTH,
+						0,
+						0,
+						0,
+					),
 				),
 			)
 		} else {
 			monthButtons = append(monthButtons,
 				tgbotapi.NewInlineKeyboardButtonData(
 					fmt.Sprintf("%v", time.Month(i).String()[:3]),
-					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, i, 0),
+					GetCallbackCalendarData(
+						utils.CALLBACK_SELECT,
+						utils.CALLBACK_CALENDAR_STEP_MONTH,
+						selectedYear,
+						i,
+						0,
+					),
 				),
 			)
 		}
@@ -127,15 +193,69 @@ func BuildMonthCalendarWidget(callbackData string, userTimezone *time.Location) 
 	var navButtons []tgbotapi.InlineKeyboardButton
 	if showBackNavButton {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear-1, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprint(selectedYear), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, selectedYear, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear+1, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"<<",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear-1,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprint(selectedYear),
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					selectedYear,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear+1,
+					0,
+					0,
+				),
+			),
 		)
 	} else {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("×", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear-1, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprint(currentYear), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_YEAR, selectedYear, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear+1, 0, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"×",
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear-1,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprint(currentYear),
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_YEAR,
+					selectedYear,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear+1,
+					0,
+					0,
+				),
+			),
 		)
 	}
 
@@ -160,13 +280,76 @@ func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tg
 	var buttons [][]tgbotapi.InlineKeyboardButton
 
 	legendButtons := tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("S", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("M", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("T", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("W", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("T", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("F", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
-		tgbotapi.NewInlineKeyboardButtonData("S", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, 0)),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"S",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"M",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"T",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"W",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"T",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"F",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
+		tgbotapi.NewInlineKeyboardButtonData(
+			"S",
+			GetCallbackCalendarData(
+				utils.CALLBACK_NO_ACTION,
+				utils.CALLBACK_CALENDAR_STEP_DAY,
+				selectedYear,
+				selectedMonth,
+				0,
+			),
+		),
 	)
 	buttons = append(buttons, legendButtons)
 
@@ -176,7 +359,13 @@ func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tg
 	for i := 0; i < int(firstDayOfTheMonth); i++ {
 		dayButtons = append(dayButtons,
 			tgbotapi.NewInlineKeyboardButtonData(" ",
-				GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					0,
+					0,
+					0,
+				),
 			),
 		)
 	}
@@ -187,14 +376,26 @@ func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tg
 			dayButtons = append(dayButtons,
 				tgbotapi.NewInlineKeyboardButtonData(
 					" ",
-					GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
+					GetCallbackCalendarData(
+						utils.CALLBACK_NO_ACTION,
+						utils.CALLBACK_CALENDAR_STEP_MONTH,
+						0,
+						0,
+						0,
+					),
 				),
 			)
 		} else {
 			dayButtons = append(dayButtons,
 				tgbotapi.NewInlineKeyboardButtonData(
 					fmt.Sprint(i),
-					GetCallbackCalendarData(utils.CALLBACK_SELECT, utils.CALLBACK_CALENDAR_STEP_DAY, selectedYear, selectedMonth, i),
+					GetCallbackCalendarData(
+						utils.CALLBACK_SELECT,
+						utils.CALLBACK_CALENDAR_STEP_DAY,
+						selectedYear,
+						selectedMonth,
+						i,
+					),
 				),
 			)
 		}
@@ -213,7 +414,13 @@ func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tg
 			} else {
 				rowButtons = append(rowButtons,
 					tgbotapi.NewInlineKeyboardButtonData(" ",
-						GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_MONTH, 0, 0, 0),
+						GetCallbackCalendarData(
+							utils.CALLBACK_NO_ACTION,
+							utils.CALLBACK_CALENDAR_STEP_MONTH,
+							0,
+							0,
+							0,
+						),
 					),
 				)
 			}
@@ -237,15 +444,77 @@ func BuildDayCalendarWidget(callbackData string, userTimezone *time.Location) tg
 	}
 	if showBackNavButton {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("<<", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, prevYear, prevMonth, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v %v", time.Month(selectedMonth).String()[:3], selectedDate.Year()), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, nextYear, nextMonth, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"<<",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_DAY,
+					prevYear,
+					prevMonth,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprintf(
+					"%v %v",
+					time.Month(selectedMonth).String()[:3],
+					selectedDate.Year(),
+				),
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_DAY,
+					nextYear,
+					nextMonth,
+					0,
+				),
+			),
 		)
 	} else {
 		navButtons = tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("×", GetCallbackCalendarData(utils.CALLBACK_NO_ACTION, utils.CALLBACK_CALENDAR_STEP_DAY, prevYear, selectedMonth, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%v %v", time.Month(selectedMonth).String()[:3], selectedDate.Year()), GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_MONTH, selectedYear, 0, 0)),
-			tgbotapi.NewInlineKeyboardButtonData(">>", GetCallbackCalendarData(utils.CALLBACK_GOTO, utils.CALLBACK_CALENDAR_STEP_DAY, nextYear, nextMonth, 0)),
+			tgbotapi.NewInlineKeyboardButtonData(
+				"×",
+				GetCallbackCalendarData(
+					utils.CALLBACK_NO_ACTION,
+					utils.CALLBACK_CALENDAR_STEP_DAY,
+					prevYear,
+					selectedMonth,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				fmt.Sprintf(
+					"%v %v",
+					time.Month(selectedMonth).String()[:3],
+					selectedDate.Year(),
+				),
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_MONTH,
+					selectedYear,
+					0,
+					0,
+				),
+			),
+			tgbotapi.NewInlineKeyboardButtonData(
+				">>",
+				GetCallbackCalendarData(
+					utils.CALLBACK_GOTO,
+					utils.CALLBACK_CALENDAR_STEP_DAY,
+					nextYear,
+					nextMonth,
+					0,
+				),
+			),
 		)
 	}
 

@@ -92,7 +92,6 @@ func (reminder Reminder) DeleteById() error {
 }
 
 func (reminder Reminder) DeleteReminderInConstruction() error {
-	// delete all reminders that has from_user_id == reminder.FromUserId and ChatId == reminder.ChatId
 	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
