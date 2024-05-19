@@ -320,8 +320,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 	}
 
 	if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
+		isImageReminder := len(update.CallbackQuery.Message.Photo) > 0
 		reminderText := ""
-		if len(update.CallbackQuery.Message.Photo) > 0 {
+		if isImageReminder {
 			reminderText = update.CallbackQuery.Message.Caption[:len(update.CallbackQuery.Message.Caption)-len(utils.RENEW_REMINDER_TEXT)]
 		} else {
 			reminderText = update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)]
@@ -333,7 +334,6 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 		switch update.CallbackQuery.Data {
 		case utils.RENEW_REMINDER_15M:
 			nextTriggerTime := time.Now().In(tz).Add(15 * time.Minute)
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -346,22 +346,35 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  false,
 				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		case utils.RENEW_REMINDER_30M:
 			nextTriggerTime := time.Now().In(tz).Add(30 * time.Minute)
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -374,22 +387,35 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  false,
 				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		case utils.RENEW_REMINDER_1H:
 			nextTriggerTime := time.Now().In(tz).Add(1 * time.Hour)
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -402,22 +428,35 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  false,
 				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		case utils.RENEW_REMINDER_3H:
 			nextTriggerTime := time.Now().In(tz).Add(3 * time.Hour)
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -430,22 +469,35 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  false,
 				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		case utils.RENEW_REMINDER_1D:
 			nextTriggerTime := time.Now().In(tz).Add(24 * time.Hour)
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -458,21 +510,34 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  false,
 				NextTriggerTime: nextTriggerTime.In(time.UTC).Format(utils.DIRECTUS_DATETIME_FORMAT),
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		case utils.RENEW_REMINDER_CUSTOM:
-			// TODO: fill in FileId if there is
 			reminder := schemas.Reminder{
 				Id:              uuid.New().String(),
 				ChatId:          update.CallbackQuery.Message.Chat.ID,
@@ -485,18 +550,33 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				InConstruction:  true,
 				NextTriggerTime: "",
 			}
+			if isImageReminder {
+				reminder.FileId = update.CallbackQuery.Message.Photo[0].FileID
+			}
 			err = reminder.Create()
 			if err != nil {
 				log.Fatal(err)
 			}
-			// TODO: edit photo message if its a photo reminder instead
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				reminderText,
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					reminderText,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					reminderText,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+
 			}
 			newMsg := tgbotapi.NewMessage(
 				update.CallbackQuery.Message.Chat.ID,
@@ -510,13 +590,24 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				log.Fatal(err)
 			}
 		case utils.RENEW_REMINDER_CANCEL:
-			editedMessage := tgbotapi.NewEditMessageText(
-				update.CallbackQuery.Message.Chat.ID,
-				update.CallbackQuery.Message.MessageID,
-				reminderText,
-			)
-			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+			if isImageReminder {
+				editedMessage := tgbotapi.NewEditMessageCaption(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					reminderText,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					reminderText,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
 			}
 		default:
 			return
