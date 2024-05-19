@@ -33,7 +33,7 @@ air
 - [X] Set separate go-routine to check if any reminder is due
 - [X] Option to renew reminders when they are triggered
 - [X] Handle chat settings  (require separate table to store settings)
-- [ ] Handle listing and deleting reminders
+- [X] Handle listing and deleting reminders
 - [ ] Handle image reminders
 - [ ] Handle group reminders
 - [ ] Handle group settings

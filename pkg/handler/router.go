@@ -163,9 +163,13 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		if len(chatReminders) == 0 {
 			msg.Text = "There are no reminders in this chat."
 		} else {
-			listReminderText, listReminderMarkup := core.BuildListReminderMarkup(chatReminders, 1)
-			msg.Text = listReminderText
-			msg.ReplyMarkup = listReminderMarkup
+			listReminderText, listReminderMarkup, err := core.BuildListReminderTextAndMarkup(chatReminders, 1)
+			if err != nil {
+				msg.Text = utils.NO_REMINDERS_MESSAGE
+			} else {
+				msg.Text = listReminderText
+				msg.ReplyMarkup = listReminderMarkup
+			}
 		}
 	case "settings":
 		tz, _ := time.LoadLocation(chatSettings.Timezone)
@@ -521,7 +525,18 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			return
 		}
 		if action == utils.CALLBACK_GOTO {
-			msgText, replyMarkup := core.BuildListReminderMarkup(chatReminders, page)
+			msgText, replyMarkup, err := core.BuildListReminderTextAndMarkup(chatReminders, page)
+			if err != nil {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					utils.NO_REMINDERS_MESSAGE,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+				return
+			}
 			editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 				update.CallbackQuery.Message.Chat.ID,
 				update.CallbackQuery.Message.MessageID,
@@ -534,7 +549,89 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			return
 		}
 		if action == utils.CALLBACK_SELECT {
-			log.Info(step)
+			reminderPtr, err := schemas.GetReminderById(step)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if reminderPtr == nil {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					"Reminder not found",
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+				return
+			}
+			msgText, replyMarkup, err := core.BuildReminderMenuTextAndMarkup(*reminderPtr)
+			if err != nil {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					utils.NO_REMINDERS_MESSAGE,
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+				return
+			}
+			editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				msgText,
+				replyMarkup,
+			)
+			editedMessage.ParseMode = "html"
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+		if action == utils.CALLBACK_DELETE {
+			reminder, err := schemas.GetReminderById(step)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if reminder == nil {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					"Reminder not found",
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+				return
+			}
+			err = reminder.DeleteById()
+			if err != nil {
+				editedMessage := tgbotapi.NewEditMessageText(
+					update.CallbackQuery.Message.Chat.ID,
+					update.CallbackQuery.Message.MessageID,
+					"error deleting reminder",
+				)
+				if _, err := bot.Request(editedMessage); err != nil {
+					log.Fatal(err)
+				}
+				return
+			}
+			editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				"Reminder has been deleted",
+				tgbotapi.NewInlineKeyboardMarkup(
+					tgbotapi.NewInlineKeyboardRow(
+						tgbotapi.NewInlineKeyboardButtonData(
+							"Back to list",
+							core.GetCallbackListReminderData(utils.CALLBACK_GOTO, reminder.Id, 1),
+						),
+					),
+				),
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
 			return
 		}
 	}

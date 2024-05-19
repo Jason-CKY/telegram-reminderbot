@@ -88,3 +88,4 @@ const INVALID_TIMEZONE_MESSAGE = "Invalid timezone.\n\nFor a list of all support
 
 // list reminder settings
 const MAX_REMINDERS_PER_PAGE = 5
+const NO_REMINDERS_MESSAGE = "There are no reminders on current page, try to open another page or request list again."

@@ -250,6 +250,46 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 	return &reminderResponse["data"][0], nil
 }
 
+func GetReminderById(Id string) (*Reminder, error) {
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"id": {
+					"_eq": "%v"
+				}
+			}
+		}
+	}`, Id))
+	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
+	}
+	var reminderResponse map[string][]Reminder
+	jsonErr := json.Unmarshal(body, &reminderResponse)
+	// error handling for json unmarshaling
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	if len(reminderResponse["data"]) == 0 {
+		return nil, nil
+	}
+
+	return &reminderResponse["data"][0], nil
+}
+
 func GetDueReminders() ([]Reminder, error) {
 	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
