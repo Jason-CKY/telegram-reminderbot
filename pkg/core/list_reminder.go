@@ -102,11 +102,18 @@ func BuildListReminderTextAndMarkup(reminders []schemas.Reminder, page int) (str
 		)
 	}
 
+	if len(navButtons) > 0 {
+		replyMarkup := tgbotapi.NewInlineKeyboardMarkup(
+			reminderSelectButtons,
+			navButtons,
+		)
+		return messageText, replyMarkup, nil
+	}
 	replyMarkup := tgbotapi.NewInlineKeyboardMarkup(
 		reminderSelectButtons,
-		navButtons,
 	)
 	return messageText, replyMarkup, nil
+
 }
 
 func BuildReminderMenuTextAndMarkup(reminder schemas.Reminder) (string, tgbotapi.InlineKeyboardMarkup, error) {

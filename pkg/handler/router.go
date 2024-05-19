@@ -18,7 +18,8 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if update.Message != nil { // If we got a message
 		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.Message.Chat.ID)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		if update.Message.IsCommand() {
 			HandleCommand(update, bot, chatSettings)
@@ -28,7 +29,8 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	} else if update.CallbackQuery != nil {
 		chatSettings, err := schemas.InsertChatSettingsIfNotPresent(update.CallbackQuery.Message.Chat.ID)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		HandleCallbackQuery(update, bot, chatSettings)
 	}
@@ -41,18 +43,21 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		if reminderInConstruction != nil {
 			err := reminderInConstruction.DeleteById()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 		}
 		chatSettings.Updating = false
 		err := chatSettings.Update()
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		if reminderInConstruction != nil {
 			err := reminderInConstruction.DeleteReminderInConstruction()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, utils.CANCEL_OPERATION_MESSAGE)
@@ -60,7 +65,8 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 		if msg.Text != "" {
 			if _, err := bot.Send(msg); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 		}
 	} else if chatSettings.Updating {
@@ -76,7 +82,8 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 			msg.ReplyToMessageID = update.Message.MessageID
 			msg.ParseMode = "html"
 			if _, err := bot.Send(msg); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 		} else {
 			_, err := time.LoadLocation(update.Message.Text)
@@ -85,20 +92,23 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 				msg.ReplyToMessageID = update.Message.MessageID
 				msg.ParseMode = "html"
 				if _, err := bot.Send(msg); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			} else {
 				chatSettings.Timezone = update.Message.Text
 				chatSettings.Updating = false
 				err = chatSettings.Update()
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Timezone has been set")
 				msg.ReplyToMessageID = update.Message.MessageID
 				msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 				if _, err := bot.Send(msg); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		}
@@ -138,12 +148,14 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		// delete previous reminders in construction to create a new one
 		err := reminder.DeleteReminderInConstruction()
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		// create a new reminder
 		err = reminder.Create()
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		// Reply to user message, with keyboard commands to cancel and placeholder text to enter reminder text
 		msg.Text = utils.REMINDER_BUILDER_MESSAGE
@@ -154,16 +166,19 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		)
 		cancelKeyboard.InputFieldPlaceholder = "Enter reminder text."
 		msg.ReplyMarkup = cancelKeyboard
+
 		msg.ReplyToMessageID = update.Message.MessageID
 	case "list":
 		chatReminders, err := schemas.ListChatReminders(update.Message.Chat.ID)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		if len(chatReminders) == 0 {
 			msg.Text = "There are no reminders in this chat."
 		} else {
 			listReminderText, listReminderMarkup, err := core.BuildListReminderTextAndMarkup(chatReminders, 1)
+			log.Info(listReminderText)
 			if err != nil {
 				msg.Text = utils.NO_REMINDERS_MESSAGE
 			} else {
@@ -184,14 +199,16 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		chatSettings.Updating = true
 		err := chatSettings.Update()
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 	default:
 		return
 	}
 
 	if _, err := bot.Send(msg); err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 }
 
@@ -212,7 +229,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
-						log.Fatal(err)
+						log.Error(err)
+						return
 					}
 					return
 				}
@@ -226,7 +244,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
-						log.Fatal(err)
+						log.Error(err)
+						return
 					}
 					return
 				}
@@ -240,7 +259,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
-						log.Fatal(err)
+						log.Error(err)
+						return
 					}
 					return
 				}
@@ -257,7 +277,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
-						log.Fatal(err)
+						log.Error(err)
+						return
 					}
 					return
 				}
@@ -271,7 +292,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						replyMarkup,
 					)
 					if _, err := bot.Request(editedMessage); err != nil {
-						log.Fatal(err)
+						log.Error(err)
+						return
 					}
 					return
 				}
@@ -293,13 +315,15 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 
 						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
 						if err != nil {
-							log.Fatal(err)
+							log.Error(err)
+							return
 						}
 						reminderInConstruction.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 						reminderInConstruction.InConstruction = false
 						err = reminderInConstruction.Update()
 						if err != nil {
-							log.Fatal(err)
+							log.Error(err)
+							return
 						}
 						editedMessage := tgbotapi.NewEditMessageText(
 							update.CallbackQuery.Message.Chat.ID,
@@ -307,7 +331,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 							replyMessageText,
 						)
 						if _, err := bot.Request(editedMessage); err != nil {
-							log.Fatal(err)
+							log.Error(err)
+							return
 						}
 						return
 					}
@@ -329,7 +354,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 		}
 		tz, err := time.LoadLocation(chatSettings.Timezone)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		switch update.CallbackQuery.Data {
 		case utils.RENEW_REMINDER_15M:
@@ -351,7 +377,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -360,7 +387,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -370,7 +398,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		case utils.RENEW_REMINDER_30M:
@@ -392,7 +421,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -401,7 +431,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -411,7 +442,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		case utils.RENEW_REMINDER_1H:
@@ -433,7 +465,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -442,7 +475,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -452,7 +486,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		case utils.RENEW_REMINDER_3H:
@@ -474,7 +509,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -483,7 +519,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -493,7 +530,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		case utils.RENEW_REMINDER_1D:
@@ -515,7 +553,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -524,7 +563,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -534,7 +574,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					fmt.Sprintf("%v\n\nI will remind you again on %v", reminderText, nextTriggerTime.Format(utils.DATE_AND_TIME_FORMAT)),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		case utils.RENEW_REMINDER_CUSTOM:
@@ -555,7 +596,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.Create()
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if isImageReminder {
 				editedMessage := tgbotapi.NewEditMessageCaption(
@@ -564,7 +606,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					reminderText,
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			} else {
@@ -574,7 +617,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					reminderText,
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 
 			}
@@ -587,7 +631,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				Selective:  true,
 			}
 			if _, err := bot.Request(newMsg); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 		case utils.RENEW_REMINDER_CANCEL:
 			if isImageReminder {
@@ -597,7 +642,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					reminderText,
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			} else {
 				editedMessage := tgbotapi.NewEditMessageText(
@@ -606,7 +652,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					reminderText,
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 		default:
@@ -619,7 +666,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 		action, step, page := core.SplitCallbackListReminderData(update.CallbackQuery.Data)
 		chatReminders, err := schemas.ListChatReminders(update.CallbackQuery.Message.Chat.ID)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 		if len(chatReminders) == 0 {
 			editedMessage := tgbotapi.NewEditMessageText(
@@ -628,7 +676,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				"There are no reminders in this chat.",
 			)
 			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			return
 		}
@@ -641,7 +690,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					utils.NO_REMINDERS_MESSAGE,
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -652,14 +702,16 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				replyMarkup,
 			)
 			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			return
 		}
 		if action == utils.CALLBACK_SELECT {
 			reminderPtr, err := schemas.GetReminderById(step)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if reminderPtr == nil {
 				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -676,7 +728,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -696,7 +749,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -708,14 +762,16 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			)
 			editedMessage.ParseMode = "html"
 			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			return
 		}
 		if action == utils.CALLBACK_DELETE {
 			reminder, err := schemas.GetReminderById(step)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if reminder == nil {
 				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -732,7 +788,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -752,7 +809,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -770,14 +828,16 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				),
 			)
 			if _, err := bot.Request(editedMessage); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			return
 		}
 		if action == utils.CALLBACK_SHOW_IMAGE {
 			reminder, err := schemas.GetReminderById(step)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			if reminder == nil {
 				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -794,7 +854,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				return
 			}
@@ -804,7 +865,8 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				tgbotapi.FileID(reminder.FileId),
 			)
 			if _, err := bot.Request(msg); err != nil {
-				log.Fatal(err)
+				log.Error(err)
+				return
 			}
 			return
 		}

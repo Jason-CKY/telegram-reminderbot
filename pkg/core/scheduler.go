@@ -44,7 +44,8 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 					),
 				)
 				if _, err := bot.Request(photo_msg); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			} else {
 				msg := tgbotapi.NewMessage(reminder.ChatId, fmt.Sprintf("%v%v%v", utils.REMINDER_PREFIX, reminder.ReminderText, utils.RENEW_REMINDER_TEXT))
@@ -62,7 +63,8 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 					),
 				)
 				if _, err := bot.Send(msg); err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 			frequencyText := strings.Split(reminder.Frequency, "-")
@@ -70,17 +72,20 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 			if frequency == utils.REMINDER_ONCE {
 				err := reminder.DeleteById()
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			} else {
 				nextTriggerTime, err := reminder.CalculateNextTriggerTime()
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 				reminder.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 				err = reminder.Update()
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
+					return
 				}
 			}
 
