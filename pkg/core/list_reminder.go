@@ -60,10 +60,14 @@ func BuildListReminderTextAndMarkup(reminders []schemas.Reminder, page int) (str
 	}
 	var reminderSelectButtons []tgbotapi.InlineKeyboardButton
 	for i, reminder := range displayedReminders {
+		prefix := utils.REMINDER_PREFIX
+		if reminder.FileId != "" {
+			prefix = utils.REMINDER_PHOTO_PREFIX
+		}
 		number := (page-1)*utils.MAX_REMINDERS_PER_PAGE + i + 1
 		messageText += fmt.Sprintf(
 			"%v%v)    %v (%v at %v)\n",
-			utils.REMINDER_PREFIX,
+			prefix,
 			number,
 			reminder.ReminderText,
 			parseReminderFrequencyToText(reminder),
@@ -122,13 +126,25 @@ func BuildReminderMenuTextAndMarkup(reminder schemas.Reminder) (string, tgbotapi
 		reminder.Time,
 	)
 
-	replyMarkup := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
+	var editButtons []tgbotapi.InlineKeyboardButton
+	if reminder.FileId != "" {
+		editButtons = append(editButtons,
 			tgbotapi.NewInlineKeyboardButtonData(
-				"Delete",
-				GetCallbackListReminderData(utils.CALLBACK_DELETE, reminder.Id, 0),
+				"Show Image",
+				GetCallbackListReminderData(utils.CALLBACK_SHOW_IMAGE, reminder.Id, 0),
 			),
+		)
+	}
+
+	editButtons = append(editButtons,
+		tgbotapi.NewInlineKeyboardButtonData(
+			"Delete",
+			GetCallbackListReminderData(utils.CALLBACK_DELETE, reminder.Id, 0),
 		),
+	)
+
+	replyMarkup := tgbotapi.NewInlineKeyboardMarkup(
+		editButtons,
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(
 				"Back to list",

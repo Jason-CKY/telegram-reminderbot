@@ -13,8 +13,13 @@ import (
 )
 
 func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
-	if reminderInConstruction.ReminderText == "" {
-		reminderInConstruction.ReminderText = update.Message.Text
+	if reminderInConstruction.ReminderText == "" && reminderInConstruction.FileId == "" {
+		if len(update.Message.Photo) > 0 {
+			reminderInConstruction.ReminderText = update.Message.Caption
+			reminderInConstruction.FileId = update.Message.Photo[0].FileID
+		} else {
+			reminderInConstruction.ReminderText = update.Message.Text
+		}
 		err := reminderInConstruction.Update()
 		if err != nil {
 			log.Fatal(err)
