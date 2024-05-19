@@ -35,5 +35,5 @@ air
 - [X] Handle chat settings  (require separate table to store settings)
 - [X] Handle listing and deleting reminders
 - [X] Handle image reminders
-- [ ] Handle group reminders
-- [ ] Handle group settings
+- [X] Handle group reminders
+- [X] Handle group settings

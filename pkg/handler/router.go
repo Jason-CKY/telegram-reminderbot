@@ -21,7 +21,19 @@ func HandleUpdate(update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			log.Error(err)
 			return
 		}
-		if update.Message.IsCommand() {
+
+		if update.Message.MigrateToChatID != 0 {
+			err = schemas.MigrateReminderChatId(update.Message.Chat.ID, update.Message.MigrateToChatID)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			err = schemas.MigrateChatSettingsChatId(update.Message.Chat.ID, update.Message.MigrateToChatID)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+		} else if update.Message.IsCommand() {
 			HandleCommand(update, bot, chatSettings)
 		} else {
 			HandleMessage(update, bot, chatSettings)
@@ -41,7 +53,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 
 	if update.Message.Text == utils.CANCEL_MESSAGE {
 		if reminderInConstruction != nil {
-			err := reminderInConstruction.DeleteById()
+			err := reminderInConstruction.Delete()
 			if err != nil {
 				log.Error(err)
 				return
@@ -794,7 +806,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				}
 				return
 			}
-			err = reminder.DeleteById()
+			err = reminder.Delete()
 			if err != nil {
 				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 					update.CallbackQuery.Message.Chat.ID,

@@ -73,7 +73,7 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 			frequencyText := strings.Split(reminder.Frequency, "-")
 			frequency := frequencyText[0]
 			if frequency == utils.REMINDER_ONCE {
-				err := reminder.DeleteById()
+				err := reminder.Delete()
 				if err != nil {
 					log.Error(err)
 					return

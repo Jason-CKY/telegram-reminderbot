@@ -71,7 +71,7 @@ func (reminder Reminder) Update() error {
 	return nil
 }
 
-func (reminder Reminder) DeleteById() error {
+func (reminder Reminder) Delete() error {
 	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -381,4 +381,42 @@ func ListChatReminders(chatId int64) ([]Reminder, error) {
 		return nil, nil
 	}
 	return reminderResponse["data"], nil
+}
+
+func MigrateReminderChatId(fromChatId int64, toChatId int64) error {
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"chat_id": {
+					"_eq": "%v"
+				}
+			}
+		},
+		"data": {
+			"chat_id": "%v"
+		}
+	}`, fromChatId, toChatId))
+	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return httpErr
+	}
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return fmt.Errorf("error updating reminders in directus: %v", string(body))
+	}
+	var reminderResponse map[string][]Reminder
+	jsonErr := json.Unmarshal(body, &reminderResponse)
+	// error handling for json unmarshaling
+	if jsonErr != nil {
+		return jsonErr
+	}
+	return nil
 }

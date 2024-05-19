@@ -61,6 +61,26 @@ func (chatSettings ChatSettings) Update() error {
 	return nil
 }
 
+func (chatSettings ChatSettings) Delete() error {
+	endpoint := fmt.Sprintf("%v/items/chat_settings/%v", utils.DirectusHost, chatSettings.ChatId)
+	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return httpErr
+	}
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 204 {
+		return fmt.Errorf("error deleting chat settings in directus: %v", string(body))
+	}
+	return nil
+}
+
 func GetChatSettings(chatId int64) (*ChatSettings, error) {
 	endpoint := fmt.Sprintf("%v/items/chat_settings", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
@@ -125,4 +145,21 @@ func InsertChatSettingsIfNotPresent(chatId int64, bot *tgbotapi.BotAPI) (*ChatSe
 		}
 	}
 	return chatSettings, nil
+}
+
+func MigrateChatSettingsChatId(fromChatId int64, toChatId int64) error {
+	oldChatSettings, err := GetChatSettings(fromChatId)
+	if err != nil {
+		return err
+	}
+	err = oldChatSettings.Delete()
+	if err != nil {
+		return err
+	}
+	oldChatSettings.ChatId = toChatId
+	err = oldChatSettings.Create()
+	if err != nil {
+		return err
+	}
+	return nil
 }
