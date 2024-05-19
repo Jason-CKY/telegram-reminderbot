@@ -554,10 +554,18 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				log.Fatal(err)
 			}
 			if reminderPtr == nil {
-				editedMessage := tgbotapi.NewEditMessageText(
+				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 					update.CallbackQuery.Message.Chat.ID,
 					update.CallbackQuery.Message.MessageID,
 					"Reminder not found",
+					tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonData(
+								"Back to list",
+								core.GetCallbackListReminderData(utils.CALLBACK_GOTO, utils.CALLBACK_NO_ACTION, 1),
+							),
+						),
+					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
 					log.Fatal(err)
@@ -566,10 +574,18 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			msgText, replyMarkup, err := core.BuildReminderMenuTextAndMarkup(*reminderPtr)
 			if err != nil {
-				editedMessage := tgbotapi.NewEditMessageText(
+				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 					update.CallbackQuery.Message.Chat.ID,
 					update.CallbackQuery.Message.MessageID,
 					utils.NO_REMINDERS_MESSAGE,
+					tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonData(
+								"Back to list",
+								core.GetCallbackListReminderData(utils.CALLBACK_GOTO, utils.CALLBACK_NO_ACTION, 1),
+							),
+						),
+					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
 					log.Fatal(err)
@@ -606,10 +622,18 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 			}
 			err = reminder.DeleteById()
 			if err != nil {
-				editedMessage := tgbotapi.NewEditMessageText(
+				editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
 					update.CallbackQuery.Message.Chat.ID,
 					update.CallbackQuery.Message.MessageID,
 					"error deleting reminder",
+					tgbotapi.NewInlineKeyboardMarkup(
+						tgbotapi.NewInlineKeyboardRow(
+							tgbotapi.NewInlineKeyboardButtonData(
+								"Back to list",
+								core.GetCallbackListReminderData(utils.CALLBACK_GOTO, reminder.Id, 1),
+							),
+						),
+					),
 				)
 				if _, err := bot.Request(editedMessage); err != nil {
 					log.Fatal(err)
