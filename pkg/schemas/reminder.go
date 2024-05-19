@@ -312,7 +312,8 @@ func ListChatReminders(chatId int64) ([]Reminder, error) {
 						}
 					}
 				]
-			}
+			},
+			"sort": "date_created"
 		}
 	}`, chatId))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))

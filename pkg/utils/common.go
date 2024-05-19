@@ -45,6 +45,7 @@ var DAY_OF_WEEK = map[string]int{
 const CALLBACK_NO_ACTION = "n"
 const CALLBACK_GOTO = "g"
 const CALLBACK_SELECT = "s"
+const CALLBACK_DELETE = "d"
 
 const CALLBACK_CALENDAR_STEP_YEAR = "y"
 const CALLBACK_CALENDAR_STEP_MONTH = "m"

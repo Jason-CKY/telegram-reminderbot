@@ -156,7 +156,6 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		msg.ReplyMarkup = cancelKeyboard
 		msg.ReplyToMessageID = update.Message.MessageID
 	case "list":
-		// TODO
 		chatReminders, err := schemas.ListChatReminders(update.Message.Chat.ID)
 		if err != nil {
 			log.Fatal(err)
@@ -211,7 +210,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
-				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					return
+				}
+				if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
 					// user clicks on navigation button on month view
 					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -223,7 +224,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
-				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
+					return
+				}
+				if step == utils.CALLBACK_CALENDAR_STEP_DAY {
 					// user clicks on navigation button on day view
 					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -235,8 +238,11 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
+					return
 				}
-			} else if action == utils.CALLBACK_SELECT {
+				return
+			}
+			if action == utils.CALLBACK_SELECT {
 				if step == utils.CALLBACK_CALENDAR_STEP_YEAR {
 					// user clicks on a year
 					replyMarkup := core.BuildMonthCalendarWidget(update.CallbackQuery.Data, tz)
@@ -249,7 +255,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
-				} else if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
+					return
+				}
+				if step == utils.CALLBACK_CALENDAR_STEP_MONTH {
 					// user clicks on a month
 					replyMarkup := core.BuildDayCalendarWidget(update.CallbackQuery.Data, tz)
 					editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
@@ -261,7 +269,9 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 					if _, err := bot.Request(editedMessage); err != nil {
 						log.Fatal(err)
 					}
-				} else if step == utils.CALLBACK_CALENDAR_STEP_DAY {
+					return
+				}
+				if step == utils.CALLBACK_CALENDAR_STEP_DAY {
 					// user clicks on a day
 					if reminderInConstruction.Frequency == utils.REMINDER_ONCE || reminderInConstruction.Frequency == utils.REMINDER_YEARLY {
 						_, _, selectedYear, selectedMonth, selectedDay := core.SplitCallbackCalendarData(update.CallbackQuery.Data)
@@ -295,12 +305,17 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 						if _, err := bot.Request(editedMessage); err != nil {
 							log.Fatal(err)
 						}
-
+						return
 					}
+					return
 				}
 			}
+			return
 		}
-	} else if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
+		return
+	}
+
+	if strings.HasPrefix(update.CallbackQuery.Data, "renew") && reminderInConstruction == nil {
 		reminderText := update.CallbackQuery.Message.Text[:len(update.CallbackQuery.Message.Text)-len(utils.RENEW_REMINDER_TEXT)]
 		tz, err := time.LoadLocation(chatSettings.Timezone)
 		if err != nil {
@@ -483,6 +498,43 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 				log.Fatal(err)
 			}
 		default:
+			return
+		}
+		return
+	}
+
+	if strings.HasPrefix(update.CallbackQuery.Data, "lr") {
+		action, step, page := core.SplitCallbackListReminderData(update.CallbackQuery.Data)
+		chatReminders, err := schemas.ListChatReminders(update.CallbackQuery.Message.Chat.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(chatReminders) == 0 {
+			editedMessage := tgbotapi.NewEditMessageText(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				"There are no reminders in this chat.",
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+		if action == utils.CALLBACK_GOTO {
+			msgText, replyMarkup := core.BuildListReminderMarkup(chatReminders, page)
+			editedMessage := tgbotapi.NewEditMessageTextAndMarkup(
+				update.CallbackQuery.Message.Chat.ID,
+				update.CallbackQuery.Message.MessageID,
+				msgText,
+				replyMarkup,
+			)
+			if _, err := bot.Request(editedMessage); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
+		if action == utils.CALLBACK_SELECT {
+			log.Info(step)
 			return
 		}
 	}
