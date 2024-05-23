@@ -1,18 +1,33 @@
 import json
 import requests
+import os
+from datetime import datetime
+import pytz
 from pydantic import BaseModel
 from pathlib import Path
+from tqdm import tqdm
 
-# ["file_id":"AgACAgQAAxkBAAIek2Is_EZgR_T1eb8pTmgJ11o5h2qFAAIcuTEbQq9oUQ5b14L7haxeAQADAgADeAADIwQ","time":"14:00","frequency":"Weekly-1","reminder_id":"f4ead1aa-2472-48ac-8753-ac496201f7c5","job_id":"5ee9e73f-f454-4204-8fc4-e3b6a35beeaa","timezone":"Asia/Singapore"},{"user_id":5226530735,"reminder_text":"To be greatful for you god","time":"13:30","frequency":"Daily","reminder_id":"2cbed323-ad1a-4ed9-b799-47eb03119504","job_id":"466284f7-22b6-4948-9634-1d9219200386","timezone":"Asia/Singapore"}]},{"_id":{"$oid":"622e2bc26e23be1a2adb2bf5"},"chat_id":1374999435,"timezone":"Asia/Singapore","update_settings":false,"reminders_in_construction":[{"user_id":1374999435,"reminder_text":"Hey"}],"reminders":[{"user_id":1374999435,"reminder_text":"Aşk bezi what she was about to tell you","time":"23:00","frequency":"Once 2022-03-16","reminder_id":"e14b840b-d392-4597-b2a2-ada20456bf20","job_id":"d2e1dea1-c74f-4e95-adbf-f68e7f8f8fd5","timezone":"Asia/Singapore"}]},{"_id":{"$oid":"622efeb86e23be1a2adb2f8b"},"chat_id":84962687,"timezone":"Asia/Singapore","update_settings":true,"reminders_in_construction":[],"reminders":[{"user_id":84962687,"reminder_text":"","file_id":"AgACAgQAAxkBAAIe_mIu_1vY1g60McGD5up4g_xyu8KgAAI7uDEb8vh5UZB4Pe2_g2fvAQADAgADeQADIwQ","time":"02:00","frequency":"Weekly-6","reminder_id":"4fb3393f-a1f]
-class ChatRow(BaseModel):
-    reminder_id: str
-    user_id: int
-    reminder_text: str
-    file_id: str | None
-    time: str
-    frequency: str
+DIRECTUS_URL = os.environ.get("DIRECTUS_URL", "http://localhost:8055")
+REMINDER_ONCE = 'Once'
+REMINDER_DAILY = 'Daily'
+REMINDER_WEEKLY = 'Weekly'
+REMINDER_MONTHLY = 'Monthly'
+REMINDER_YEARLY = 'Yearly'
+
+class ChatSettings(BaseModel):
+    chat_id: int
     timezone: str
+    updating: bool
 
+class Reminder(BaseModel):
+    from_user_id: int
+    file_id: str
+    reminder_text: str
+    frequency: str
+    time: str
+    in_construction: bool
+    next_trigger_time: str | None
+    chat_id: int
 
 def get_all_chat_ids(chat_collection):
     chat_ids = []
@@ -23,16 +38,152 @@ def get_all_chat_ids(chat_collection):
             print(chat)
     return chat_ids
 
-def insert_directus_chat_settings(chat_collection_row):
-    pass
+def insert_directus_chat_settings(chat_settings: ChatSettings):
+    resp = requests.post(
+        f"{DIRECTUS_URL}/items/chat_settings",
+        json=chat_settings.model_dump()
+    )
+    if resp.status_code != 200 and not (resp.status_code == 400 and "unique" in resp.text):
+        raise AssertionError(resp.text)
+
+def insert_reminder(reminder: Reminder):
+    resp = requests.post(
+        f"{DIRECTUS_URL}/items/reminder",
+        json=reminder.model_dump()
+    )
+    if resp.status_code != 200 and not (resp.status_code == 400 and "unique" in resp.text):
+        raise AssertionError(resp.text)
+
+def convert_time(chat_settings: ChatSettings, reminder: Reminder):
+    hour, minute = [int(t) for t in reminder.time.split(":")]
+    _time = pytz.utc.localize(
+        datetime.now()).replace(hour=hour,
+                                minute=minute).astimezone(
+                                    pytz.timezone(chat_settings.timezone)).strftime("%H:%M")
+    return _time
+
+
+def convert_frequency(reminder: Reminder):
+    if REMINDER_ONCE in reminder.frequency:
+        time_str = f"{reminder.frequency.split()[1]}"
+        return f'Once-{pytz.utc.localize(datetime.strptime(time_str, "%Y-%m-%d")).strftime("%Y/%m/%d")}'
+    elif REMINDER_YEARLY in reminder.frequency:
+        time_str = '-'.join(reminder.frequency.split('-')[1:])
+        return f'Yearly-{pytz.utc.localize(datetime.strptime(time_str, "%Y-%m-%d")).strftime("%Y/%m/%d")}'
+    
+    return reminder.frequency
+
+# TODO
+# const DIRECTUS_DATETIME_FORMAT = "2006-01-02T15:04:05"
+def calculate_next_trigger_time(reminder: Reminder):
+    hour, minute = [int(t) for t in reminder.time.split(":")]
+    if REMINDER_ONCE in reminder.frequency:
+        time_str = f"{reminder.frequency.split()[1]}-{hour}-{minute}"
+        run_date = pytz.utc.localize(datetime.strptime(time_str, "%Y-%m-%d-%H-%M")).strftime("%Y-%m-%d")
+        # scheduler.add_job(reminder_trigger,
+        #                   'date',
+        #                   run_date=run_date,
+        #                   args=[chat_id, reminder_id],
+        #                   id=job_id)
+    elif REMINDER_DAILY in reminder.frequency:
+        # extract hour and minute
+        run_date = datetime.combine(datetime.today(),
+                                    time(hour, minute)).replace(day=10)
+        run_date = pytz.utc.localize(run_date)
+        # scheduler.add_job(reminder_trigger,
+        #                   'cron',
+        #                   day="*",
+        #                   hour=run_date.hour,
+        #                   minute=run_date.minute,
+        #                   args=[chat_id, reminder_id],
+        #                   id=job_id)
+    elif REMINDER_WEEKLY in reminder.frequency:
+        day = int(reminder.frequency.split('-')[1]) - 1
+        hour, minute = [
+            int(t)
+            for t in convert_time_str(f"{hour}:{minute}", timezone).split(":")
+        ]
+        run_date = datetime.combine(datetime.today(
+        ), time(hour, minute)).replace(
+            day=20
+        )  # middle of the month so that the next calculation won't end with negative day
+        run_date = run_date.replace(day=run_date.day -
+                                    (run_date.weekday() - day))
+        run_date = pytz.timezone(timezone).localize(run_date).astimezone(
+            pytz.utc)
+        # scheduler.add_job(
+        #     reminder_trigger,
+        #     'cron',
+        #     week="*",
+        #     day_of_week=run_date.weekday(),  # day of week goes from 0-6
+        #     hour=run_date.hour,
+        #     minute=run_date.minute,
+        #     args=[chat_id, reminder_id],
+        #     id=job_id)
+    elif REMINDER_MONTHLY in reminder.frequency:
+        day = int(reminder.frequency.split('-')[1])
+        hour, minute = [
+            int(t)
+            for t in convert_time_str(f"{hour}:{minute}", timezone).split(":")
+        ]
+        run_date = datetime.combine(datetime.today(),
+                                    time(hour, minute)).replace(day=day)
+        run_date = pytz.timezone(timezone).localize(run_date).astimezone(
+            pytz.utc)
+        # scheduler.add_job(reminder_trigger,
+        #                   'cron',
+        #                   month="*",
+        #                   day=run_date.day,
+        #                   hour=run_date.hour,
+        #                   minute=run_date.minute,
+        #                   args=[chat_id, reminder_id],
+        #                   id=job_id)
+    elif REMINDER_YEARLY in reminder.frequency:
+        _, month, day = [int(num) for num in reminder.frequency.split('-')[1:]]
+        hour, minute = [
+            int(t)
+            for t in convert_time_str(f"{hour}:{minute}", timezone).split(":")
+        ]
+        run_date = datetime.combine(datetime.today(),
+                                    time(hour, minute)).replace(month=month, day=day)
+        run_date = pytz.timezone(timezone).localize(run_date).astimezone(
+            pytz.utc)
+        # scheduler.add_job(reminder_trigger,
+        #                   'cron',
+        #                   year="*",
+        #                   month=run_date.month,
+        #                   day=run_date.day,
+        #                   hour=run_date.hour,
+        #                   minute=run_date.minute,
+        #                   args=[chat_id, reminder_id],
+        #                   id=job_id)
 
 
 def main():
     with open(Path(__file__).parent / 'chat_collection.json', "r") as f:
         chat_collection = json.load(f)
-    chat_ids = get_all_chat_ids(chat_collection)
-    # print(len(chat_ids))
-    # print(json.dumps(chat_collection[0], indent=True))
+    for row in tqdm(chat_collection):
+        chat_settings = ChatSettings(
+            chat_id=row["chat_id"],
+            timezone=row["timezone"],
+            updating=False,
+        )
+        insert_directus_chat_settings(chat_settings)
+        for _reminder in row["reminders"]:
+            reminder = Reminder(
+                chat_id=chat_settings.chat_id,
+                from_user_id=_reminder["user_id"],
+                file_id=_reminder["file_id"] if "file_id" in _reminder is not None else "",
+                reminder_text=_reminder["reminder_text"],
+                frequency=_reminder["frequency"],
+                time=_reminder["time"],
+                in_construction=False,
+                next_trigger_time="",
+            )
+            reminder.time = convert_time(chat_settings, reminder)
+            reminder.frequency = convert_frequency(reminder)
+            insert_reminder(reminder)
+
 
 if __name__ == '__main__': 
     main()

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type Reminder struct {
@@ -141,13 +140,9 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 	tz, _ := time.LoadLocation(chatSettings.Timezone)
 	frequencyText := strings.Split(reminder.Frequency, "-")
 	frequency := frequencyText[0]
-	log.Info(reminder.Frequency)
-
 	if reminder.Frequency == utils.REMINDER_DAILY {
-		log.Info("TEST")
 		frequency = utils.REMINDER_DAILY
 	}
-	log.Info(frequency)
 	switch {
 	case frequency == utils.REMINDER_ONCE:
 		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), tz)

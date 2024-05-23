@@ -8,4 +8,4 @@ include_ext = ["go", "tpl", "tmpl", "html", "templ"]
 # Exclude specific regular expressions.
 exclude_regex = ["_templ\\.go"]
 # Ignore these filename extensions or directories.
-exclude_dir = ["assets", "tmp", "vendor", "node_modules", "scripts", "docs"]
+exclude_dir = ["assets", "tmp", "vendor", "node_modules", "scripts", "docs", "ignore"]

@@ -80,7 +80,7 @@ const RENEW_REMINDER_CANCEL = "renew_cancel"
 const RENEW_REMINDER_TEXT = "\n\nRemind me again in:"
 
 const SETTINGS_CHANGE_TIMEZONE = "🕐 Change time zone"
-const CHANGE_TIMEZONE_MESSAGE = "Please type the timezone that you want to change to. For a list of all supported timezones, please click click <a href=\"https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568\">here</a>"
+const CHANGE_TIMEZONE_MESSAGE = "Please type the timezone that you want to change to. For a list of all supported timezones, please click click <a href=\"https://timeapi.io/documentation/iana-timezones\">here</a>"
 const INVALID_TIMEZONE_MESSAGE = "Invalid timezone.\n\nFor a list of all supported timezones, please click <a href=\"https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568\">here</a>"
 
 // list reminder settings
