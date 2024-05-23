@@ -11,6 +11,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func HandleErrorSendingReminder(reminder schemas.Reminder) error {
+	reminderTriggerTime, err := time.ParseInLocation(utils.DIRECTUS_DATETIME_FORMAT, reminder.NextTriggerTime, time.UTC)
+	if err != nil {
+		return err
+	}
+	if reminderTriggerTime.Add(24 * time.Hour).After(time.Now()) {
+		err = reminder.Delete()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 	for {
 		dueReminders, err := schemas.GetDueReminders()
@@ -49,7 +63,11 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 				)
 				if _, err := bot.Request(photo_msg); err != nil {
 					log.Error(err)
-					return
+					err = HandleErrorSendingReminder(reminder)
+					if err != nil {
+						log.Error(err)
+					}
+					continue
 				}
 			} else {
 				msg := tgbotapi.NewMessage(
@@ -71,7 +89,11 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 				)
 				if _, err := bot.Request(msg); err != nil {
 					log.Error(err)
-					return
+					err = HandleErrorSendingReminder(reminder)
+					if err != nil {
+						log.Error(err)
+					}
+					continue
 				}
 			}
 			frequencyText := strings.Split(reminder.Frequency, "-")
@@ -80,19 +102,23 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 				err := reminder.Delete()
 				if err != nil {
 					log.Error(err)
-					return
+					err = HandleErrorSendingReminder(reminder)
+					if err != nil {
+						log.Error(err)
+					}
+					continue
 				}
 			} else {
 				nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings)
 				if err != nil {
 					log.Error(err)
-					return
+					continue
 				}
 				reminder.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
 				err = reminder.Update()
 				if err != nil {
 					log.Error(err)
-					return
+					continue
 				}
 			}
 

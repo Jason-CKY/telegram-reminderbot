@@ -57,9 +57,25 @@ func (chatSettings ChatSettings) Update() error {
 		return fmt.Errorf("error updating chat settings to directus: %v", string(body))
 	}
 
+	// update all reminders in this chat with their new chat settings
+	reminders, err := GetRemindersByChatId(chatSettings.ChatId)
+	if err != nil {
+		return err
+	}
+	for _, reminder := range reminders {
+		nextTriggerTime, err := reminder.CalculateNextTriggerTime(&chatSettings)
+		if err != nil {
+			return err
+		}
+		reminder.NextTriggerTime = nextTriggerTime.Format(utils.DIRECTUS_DATETIME_FORMAT)
+		err = reminder.Update()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 
-	// update all reminders in this chat with their new chat settings
 }
 
 func (chatSettings ChatSettings) Delete() error {

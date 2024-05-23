@@ -105,6 +105,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 	} else if reminderInConstruction != nil {
 		core.BuildReminder(reminderInConstruction, chatSettings, update, bot)
 	} else if update.Message.Text == utils.SETTINGS_CHANGE_TIMEZONE {
+		log.Info(chatSettings)
 		chatSettings.Updating = true
 		err := chatSettings.Update()
 		if err != nil {

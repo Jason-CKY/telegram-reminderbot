@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type Reminder struct {
@@ -140,6 +141,13 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 	tz, _ := time.LoadLocation(chatSettings.Timezone)
 	frequencyText := strings.Split(reminder.Frequency, "-")
 	frequency := frequencyText[0]
+	log.Info(reminder.Frequency)
+
+	if reminder.Frequency == utils.REMINDER_DAILY {
+		log.Info("TEST")
+		frequency = utils.REMINDER_DAILY
+	}
+	log.Info(frequency)
 	switch {
 	case frequency == utils.REMINDER_ONCE:
 		triggerTime, err := time.ParseInLocation("2006/01/02 15:04", fmt.Sprintf("%v %v", frequencyText[1], reminder.Time), tz)
@@ -286,6 +294,45 @@ func GetReminderById(Id string) (*Reminder, error) {
 	}
 
 	return &reminderResponse["data"][0], nil
+}
+
+func GetRemindersByChatId(chatId int64) ([]Reminder, error) {
+	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	reqBody := []byte(fmt.Sprintf(`{
+		"query": {
+			"filter": {
+				"chat_id": {
+					"_eq": "%v"
+				},
+				"in_construction": {
+					"_eq": false
+				}
+			}
+		}
+	}`, chatId))
+	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	client := &http.Client{}
+	res, httpErr := client.Do(req)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
+	}
+	var reminderResponse map[string][]Reminder
+	jsonErr := json.Unmarshal(body, &reminderResponse)
+	// error handling for json unmarshaling
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	return reminderResponse["data"], nil
 }
 
 func GetDueReminders() ([]Reminder, error) {
