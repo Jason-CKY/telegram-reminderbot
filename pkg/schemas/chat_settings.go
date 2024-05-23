@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type ChatSettings struct {
@@ -59,6 +58,8 @@ func (chatSettings ChatSettings) Update() error {
 	}
 
 	return nil
+
+	// update all reminders in this chat with their new chat settings
 }
 
 func (chatSettings ChatSettings) Delete() error {
@@ -121,10 +122,10 @@ func GetChatSettings(chatId int64) (*ChatSettings, error) {
 	return &chatSettingsResponse["data"][0], nil
 }
 
-func InsertChatSettingsIfNotPresent(chatId int64, bot *tgbotapi.BotAPI) (*ChatSettings, error) {
+func InsertChatSettingsIfNotPresent(chatId int64) (*ChatSettings, bool, error) {
 	chatSettings, err := GetChatSettings(chatId)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if chatSettings == nil {
 		chatSettings = &ChatSettings{
@@ -134,17 +135,12 @@ func InsertChatSettingsIfNotPresent(chatId int64, bot *tgbotapi.BotAPI) (*ChatSe
 		}
 		err := chatSettings.Create()
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		msg := tgbotapi.NewMessage(
-			chatId,
-			utils.DEFAULT_SETTINGS_MESSAGE,
-		)
-		if _, err := bot.Request(msg); err != nil {
-			return nil, err
-		}
+
+		return chatSettings, false, nil
 	}
-	return chatSettings, nil
+	return chatSettings, true, nil
 }
 
 func MigrateChatSettingsChatId(fromChatId int64, toChatId int64) error {

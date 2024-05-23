@@ -14,7 +14,7 @@ curl -X POST -H "Content-Type: application/json" \
 # reminder fields
 curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
-    -d '{"field":"chat_id","type":"bigInteger","schema":{},"meta":{"interface":"input","special":null,"required":true},"collection":"reminder"}' \
+    -d '{"type":"integer","meta":{"interface":"select-dropdown-m2o","special":["m2o"],"required":true,"options":{"template":"{{chat_id}}"}},"field":"chat_id"}' \
     $DIRECTUS_URL/fields/reminder \
 
 curl -X POST -H "Content-Type: application/json" \
@@ -30,11 +30,6 @@ curl -X POST -H "Content-Type: application/json" \
 curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"type":"text","meta":{"interface":"input-multiline","special":null},"field":"reminder_text"}' \
-    $DIRECTUS_URL/fields/reminder \
-
-curl -X POST -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
-    -d '{"field":"timezone","type":"string","schema":{},"meta":{"interface":"input","special":null,"required":true},"collection":"reminder"}' \
     $DIRECTUS_URL/fields/reminder \
 
 curl -X POST -H "Content-Type: application/json" \
@@ -73,3 +68,9 @@ curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"type":"boolean","meta":{"interface":"boolean","special":["cast-boolean"]},"field":"updating","schema":{"default_value":false}}' \
     $DIRECTUS_URL/fields/chat_settings \
+
+# reminder relations
+curl -X POST -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -d '{"collection":"reminder","field":"chat_id","related_collection":"chat_settings","meta":{"sort_field":null},"schema":{"on_delete":"SET NULL"}}' \
+    $DIRECTUS_URL/relations \

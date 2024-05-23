@@ -19,6 +19,10 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 		}
 		for i := 0; i < len(dueReminders); i++ {
 			reminder := dueReminders[i]
+			chatSettings, _, err := schemas.InsertChatSettingsIfNotPresent(reminder.ChatId)
+			if err != nil {
+				panic(err)
+			}
 
 			if reminder.FileId != "" {
 				photo_msg := tgbotapi.NewPhoto(
@@ -79,7 +83,7 @@ func ScheduledReminderTrigger(bot *tgbotapi.BotAPI) {
 					return
 				}
 			} else {
-				nextTriggerTime, err := reminder.CalculateNextTriggerTime()
+				nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings)
 				if err != nil {
 					log.Error(err)
 					return

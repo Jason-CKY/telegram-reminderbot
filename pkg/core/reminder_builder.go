@@ -12,7 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
+func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schemas.ChatSettings, update *tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if reminderInConstruction.ReminderText == "" && reminderInConstruction.FileId == "" {
 		if len(update.Message.Photo) > 0 {
 			reminderInConstruction.ReminderText = update.Message.Caption
@@ -89,7 +89,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			// Monthly Calendar widget
 			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
 			msg.ReplyToMessageID = update.Message.MessageID
-			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+			tz, _ := time.LoadLocation(chatSettings.Timezone)
 			minYear := time.Now().In(tz).Year()
 			msg.ReplyMarkup = BuildMonthCalendarWidget(
 				GetCallbackCalendarData(
@@ -107,7 +107,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			}
 		case utils.REMINDER_DAILY:
 			reminderInConstruction.Frequency = update.Message.Text
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return
@@ -191,7 +191,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 			// Monthly Calendar widget
 			msg = tgbotapi.NewMessage(reminderInConstruction.ChatId, utils.CALLBACK_CALENDAR_SELECT_MONTH)
 			msg.ReplyToMessageID = update.Message.MessageID
-			tz, _ := time.LoadLocation(reminderInConstruction.Timezone)
+			tz, _ := time.LoadLocation(chatSettings.Timezone)
 			minYear := time.Now().In(tz).Year()
 			msg.ReplyMarkup = BuildMonthCalendarWidget(
 				GetCallbackCalendarData(
@@ -214,7 +214,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		val, ok := utils.DAY_OF_WEEK[update.Message.Text]
 		if ok {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_WEEKLY, val)
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return
@@ -248,7 +248,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, update *tgbotapi.Up
 		}
 		if day_of_month >= 1 && day_of_month <= 31 {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_MONTHLY, day_of_month)
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime()
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return

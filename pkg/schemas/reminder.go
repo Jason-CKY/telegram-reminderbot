@@ -19,7 +19,6 @@ type Reminder struct {
 	ChatId          int64  `json:"chat_id"`
 	FromUserId      int64  `json:"from_user_id"`
 	FileId          string `json:"file_id"`
-	Timezone        string `json:"timezone"`
 	Frequency       string `json:"frequency"`
 	Time            string `json:"time"`
 	ReminderText    string `json:"reminder_text"`
@@ -136,9 +135,9 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	return nil
 }
 
-func (reminder Reminder) CalculateNextTriggerTime() (time.Time, error) {
+func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (time.Time, error) {
 	// calculate the next trigger time, in the user's timezone
-	tz, _ := time.LoadLocation(reminder.Timezone)
+	tz, _ := time.LoadLocation(chatSettings.Timezone)
 	frequencyText := strings.Split(reminder.Frequency, "-")
 	frequency := frequencyText[0]
 	switch {
