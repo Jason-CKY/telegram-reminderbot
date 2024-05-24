@@ -16,6 +16,7 @@ jobs:
       - name: Build and push the image
         run: |
           docker login --username Jason-CKY --password ${{ secrets.GH_PAT }} ghcr.io
-          docker build -f ./build/Dockerfile --tag ghcr.io/jason-cky/telegram-reminderbot:latest --target production .
+          docker build -f ./build/Dockerfile --tag ghcr.io/jason-cky/telegram-reminderbot:$GIT_TAG_NAME --target production .
           docker push ghcr.io/jason-cky/telegram-reminderbot:$GIT_TAG_NAME
+          docker tag ghcr.io/jason-cky/telegram-reminderbot:$GIT_TAG_NAME ghcr.io/jason-cky/telegram-reminderbot:latest
           docker push ghcr.io/jason-cky/telegram-reminderbot:latest
