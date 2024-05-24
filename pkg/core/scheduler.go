@@ -16,7 +16,7 @@ func HandleErrorSendingReminder(reminder schemas.Reminder) error {
 	if err != nil {
 		return err
 	}
-	if reminderTriggerTime.Add(24 * time.Hour).After(time.Now()) {
+	if reminderTriggerTime.Add(24 * time.Hour).Before(time.Now()) {
 		err = reminder.Delete()
 		if err != nil {
 			return err
