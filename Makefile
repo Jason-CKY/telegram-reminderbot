@@ -23,11 +23,11 @@ destroy-dev:		## Bring down all hosted services with their volumes
 	docker-compose -f docker-compose.dev.yml down -v
 
 .PHONY: build
-build:	build-css	## rebuild all the images in the docker-compose file
+build:	## rebuild all the images in the docker-compose file
 	docker-compose up --build -d
 
 .PHONY: start
-start:	build-css	## deploy app
+start:	## deploy app
 	docker-compose up -d
 
 .PHONY: stop
