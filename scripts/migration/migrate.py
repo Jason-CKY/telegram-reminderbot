@@ -8,12 +8,19 @@ from pydantic import BaseModel
 from pathlib import Path
 from tqdm import tqdm
 
+DIRECTUS_ACCESS_TOKEN = os.environ.get("DIRECTUS_ACCESS_TOKEN", "test-token")
 DIRECTUS_URL = os.environ.get("DIRECTUS_URL", "http://localhost:8055")
+DIRECTUS_PUBLIC_URL = os.environ.get("DIRECTUS_PUBLIC_URL", "http://localhost:8055")
 REMINDER_ONCE = 'Once'
 REMINDER_DAILY = 'Daily'
 REMINDER_WEEKLY = 'Weekly'
 REMINDER_MONTHLY = 'Monthly'
 REMINDER_YEARLY = 'Yearly'
+
+request_headers = {
+    "Authorization": DIRECTUS_ACCESS_TOKEN,
+    "Host": DIRECTUS_URL,
+}
 
 class ChatSettings(BaseModel):
     chat_id: int
@@ -41,7 +48,8 @@ def get_all_chat_ids(chat_collection):
 
 def insert_directus_chat_settings(chat_settings: ChatSettings):
     resp = requests.post(
-        f"{DIRECTUS_URL}/items/chat_settings",
+        f"{DIRECTUS_PUBLIC_URL}/items/chat_settings",
+        headers=request_headers,
         json=chat_settings.model_dump()
     )
     if resp.status_code != 200 and not (resp.status_code == 400 and "unique" in resp.text):
@@ -49,7 +57,8 @@ def insert_directus_chat_settings(chat_settings: ChatSettings):
 
 def insert_reminder(reminder: Reminder):
     resp = requests.post(
-        f"{DIRECTUS_URL}/items/reminder",
+        f"{DIRECTUS_PUBLIC_URL}/items/reminder",
+        headers=request_headers,
         json=reminder.model_dump()
     )
     if resp.status_code != 200 and not (resp.status_code == 400 and "unique" in resp.text):
