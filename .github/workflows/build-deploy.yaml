@@ -2,11 +2,8 @@ name: build-deploy
 
 on: 
   push:
-    branches: 
-      - 'main'
-      - 'golang'
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -14,8 +11,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - uses: olegtarasov/get-tag@v2.1.3
+        id: tagName
       - name: Build and push the image
         run: |
           docker login --username Jason-CKY --password ${{ secrets.GH_PAT }} ghcr.io
           docker build -f ./build/Dockerfile --tag ghcr.io/jason-cky/telegram-reminderbot:latest --target production .
+          docker push ghcr.io/jason-cky/telegram-reminderbot:$GIT_TAG_NAME
           docker push ghcr.io/jason-cky/telegram-reminderbot:latest
