@@ -31,6 +31,7 @@ func (reminder Reminder) Create() error {
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -53,6 +54,7 @@ func (reminder Reminder) Update() error {
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -74,6 +76,7 @@ func (reminder Reminder) Delete() error {
 	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -118,6 +121,7 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -224,6 +228,7 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 	}`, chatId, fromUserId))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -264,6 +269,7 @@ func GetReminderById(Id string) (*Reminder, error) {
 	}`, Id))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -307,6 +313,7 @@ func GetRemindersByChatId(chatId int64) ([]Reminder, error) {
 	}`, chatId))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -352,6 +359,7 @@ func GetDueReminders() ([]Reminder, error) {
 	}`, time.Now().UTC().Format(utils.DIRECTUS_DATETIME_FORMAT)))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -398,6 +406,7 @@ func ListChatReminders(chatId int64) ([]Reminder, error) {
 	}`, chatId))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -440,6 +449,7 @@ func MigrateReminderChatId(fromChatId int64, toChatId int64) error {
 	}`, fromChatId, toChatId))
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}

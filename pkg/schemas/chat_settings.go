@@ -21,6 +21,7 @@ func (chatSettings ChatSettings) Create() error {
 	reqBody, _ := json.Marshal(chatSettings)
 	req, httpErr := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -43,6 +44,7 @@ func (chatSettings ChatSettings) Update() error {
 	reqBody, _ := json.Marshal(chatSettings)
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -82,6 +84,7 @@ func (chatSettings ChatSettings) Delete() error {
 	endpoint := fmt.Sprintf("%v/items/chat_settings/%v", utils.DirectusHost, chatSettings.ChatId)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return httpErr
 	}
@@ -111,6 +114,7 @@ func GetChatSettings(chatId int64) (*ChatSettings, error) {
 	}`, chatId))
 	req, httpErr := http.NewRequest("SEARCH", endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
 	if httpErr != nil {
 		return nil, httpErr
 	}

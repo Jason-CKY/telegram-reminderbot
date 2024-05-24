@@ -8,8 +8,10 @@ services:
       target: production
     container_name: go-server
     environment:
-      DIRECTUS_HOST: http://directus:8055
-      PORT: 8080
+      LOG_LEVEL: "info"
+      DIRECTUS_HOST: "http://directus:8055"
+      DIRECTUS_TOKEN: $DIRECTUS_TOKEN
+      TELEGRAM_BOT_TOKEN: $TELEGRAM_BOT_TOKEN
     ports:
       - 8080:8080
 

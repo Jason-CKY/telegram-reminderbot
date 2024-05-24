@@ -1,8 +1,18 @@
 
-ADMIN_ACCESS_TOKEN=$(curl -X POST -H "Content-Type: application/json" \
+TEMP_ACCESS_TOKEN=$(curl -X POST -H "Content-Type: application/json" \
                         -d '{"email": "admin@example.com", "password": "d1r3ctu5"}' \
                         $DIRECTUS_URL/auth/login \
                         | jq .data.access_token | cut -d '"' -f2)
+
+USER_ID=$(curl -X GET -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TEMP_ACCESS_TOKEN" \
+    $DIRECTUS_URL/users/me | jq .data.id | cut -d '"' -f2)
+
+curl -X PATCH -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TEMP_ACCESS_TOKEN" \
+    -d "{\"token\": \"$ADMIN_ACCESS_TOKEN\"}" \
+    $DIRECTUS_URL/users/$USER_ID
+
 
 # reminder table
 curl -X POST -H "Content-Type: application/json" \
@@ -74,3 +84,6 @@ curl -X POST -H "Content-Type: application/json" \
     -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
     -d '{"collection":"reminder","field":"chat_id","related_collection":"chat_settings","meta":{"sort_field":null},"schema":{"on_delete":"SET NULL"}}' \
     $DIRECTUS_URL/relations \
+
+# Setting access token
+

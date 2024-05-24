@@ -29,7 +29,8 @@ services:
     volumes: 
       - ./scripts:/scripts
     environment:
-      DIRECTUS_URL: http://directus:8055
+      DIRECTUS_URL: "http://directus:8055"
+      ADMIN_ACCESS_TOKEN: $DIRECTUS_TOKEN
     command: >
       /bin/sh -c '
         apk add curl jq bash
@@ -38,8 +39,6 @@ services:
           sleep 5
         done
         /bin/bash ./scripts/directus/build-tables.sh
-        /bin/bash ./scripts/directus/seed-data.sh
-        /bin/bash ./scripts/directus/set-permissions.sh
       '
 
 

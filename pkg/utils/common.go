@@ -1,9 +1,10 @@
 package utils
 
 var (
-	LogLevel     = "info"
-	DirectusHost = "http://localhost:8055"
-	BotToken     = "my-bot-token"
+	LogLevel      = "info"
+	DirectusHost  = "http://localhost:8055"
+	DirectusToken = "directus-access-token"
+	BotToken      = "my-bot-token"
 )
 
 const HELP_MESSAGE string = `This bot lets you set reminders! The following commands are available:
