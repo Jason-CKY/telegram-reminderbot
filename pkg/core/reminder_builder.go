@@ -49,7 +49,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Once-off reminder or recurring reminder?")
 			msg.ReplyToMessageID = update.Message.MessageID
-			msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
+			keyboard := tgbotapi.NewOneTimeReplyKeyboard(
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(utils.REMINDER_ONCE),
 					tgbotapi.NewKeyboardButton(utils.REMINDER_DAILY),
@@ -63,6 +63,8 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 				),
 			)
+			keyboard.Selective = true
+			msg.ReplyMarkup = keyboard
 			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)
 				return
@@ -135,7 +137,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 			}
 			msg := tgbotapi.NewMessage(reminderInConstruction.ChatId, "Which day of week do you want to set your weekly reminder?")
 
-			msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
+			keyboard := tgbotapi.NewOneTimeReplyKeyboard(
 				tgbotapi.NewKeyboardButtonRow(
 					tgbotapi.NewKeyboardButton(time.Monday.String()),
 					tgbotapi.NewKeyboardButton(time.Tuesday.String()),
@@ -153,6 +155,8 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 					tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 				),
 			)
+			keyboard.Selective = true
+			msg.ReplyMarkup = keyboard
 			msg.ReplyToMessageID = update.Message.MessageID
 			if _, err := bot.Request(msg); err != nil {
 				log.Error(err)

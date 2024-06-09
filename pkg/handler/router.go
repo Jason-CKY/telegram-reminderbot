@@ -119,6 +119,7 @@ func HandleMessage(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 			),
 		)
 		cancelKeyboard.InputFieldPlaceholder = "Enter timezone"
+		cancelKeyboard.Selective = true
 		msg.ReplyMarkup = cancelKeyboard
 		msg.ReplyToMessageID = update.Message.MessageID
 		msg.ParseMode = "html"
@@ -199,6 +200,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 			),
 		)
 		cancelKeyboard.InputFieldPlaceholder = "Enter reminder text."
+		cancelKeyboard.Selective = true
 		msg.ReplyMarkup = cancelKeyboard
 
 		msg.ReplyToMessageID = update.Message.MessageID
@@ -224,12 +226,14 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 		tz, _ := time.LoadLocation(chatSettings.Timezone)
 		msg.Text = fmt.Sprintf("<b>Your current settings:</b>\n\n- timezone: %v\n- local time: %v", chatSettings.Timezone, time.Now().In(tz).Format(utils.DATE_AND_TIME_FORMAT_WITHOUT_YEAR))
 		msg.ParseMode = "html"
-		msg.ReplyMarkup = tgbotapi.NewOneTimeReplyKeyboard(
+		keyboard := tgbotapi.NewOneTimeReplyKeyboard(
 			tgbotapi.NewKeyboardButtonRow(
 				tgbotapi.NewKeyboardButton(utils.SETTINGS_CHANGE_TIMEZONE),
 				tgbotapi.NewKeyboardButton(utils.CANCEL_MESSAGE),
 			),
 		)
+		keyboard.Selective = true
+		msg.ReplyMarkup = keyboard
 	default:
 		return
 	}
