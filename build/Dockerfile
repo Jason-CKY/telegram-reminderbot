@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine as dev
+FROM golang:1.24-alpine as dev
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ RUN go install github.com/cosmtrek/air@latest
 
 ENTRYPOINT ["air"]
 
-FROM golang:1.22-alpine as production
+FROM golang:1.24-alpine as production
 
 WORKDIR /app
 

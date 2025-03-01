@@ -39,7 +39,7 @@ func main() {
 	log.Infof("connecting to directus at: %v", utils.DirectusHost)
 
 	bot, err := tgbotapi.NewBotAPI(utils.BotToken)
-	bot.Debug = true
+	bot.Debug = utils.LogLevel == "debug"
 	log.Infof("Authorized on account %s", bot.Self.UserName)
 
 	if err != nil {
