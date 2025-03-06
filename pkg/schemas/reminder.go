@@ -27,7 +27,7 @@ type Reminder struct {
 }
 
 func (reminder Reminder) Create() error {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -50,7 +50,7 @@ func (reminder Reminder) Create() error {
 }
 
 func (reminder Reminder) Update() error {
-	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder/%v", utils.DirectusHost, reminder.Id)
 	reqBody, _ := json.Marshal(reminder)
 	req, httpErr := http.NewRequest(http.MethodPatch, endpoint, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -73,7 +73,7 @@ func (reminder Reminder) Update() error {
 }
 
 func (reminder Reminder) Delete() error {
-	endpoint := fmt.Sprintf("%v/items/reminder/%v", utils.DirectusHost, reminder.Id)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder/%v", utils.DirectusHost, reminder.Id)
 	req, httpErr := http.NewRequest(http.MethodDelete, endpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", utils.DirectusToken))
@@ -94,7 +94,7 @@ func (reminder Reminder) Delete() error {
 }
 
 func (reminder Reminder) DeleteReminderInConstruction() error {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -202,7 +202,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 }
 
 func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -257,7 +257,7 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 }
 
 func GetReminderById(Id string) (*Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -298,7 +298,7 @@ func GetReminderById(Id string) (*Reminder, error) {
 }
 
 func GetRemindersByChatId(chatId int64) ([]Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -338,7 +338,7 @@ func GetRemindersByChatId(chatId int64) ([]Reminder, error) {
 }
 
 func GetDueReminders() ([]Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -384,7 +384,7 @@ func GetDueReminders() ([]Reminder, error) {
 }
 
 func ListChatReminders(chatId int64) ([]Reminder, error) {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {
@@ -434,7 +434,7 @@ func ListChatReminders(chatId int64) ([]Reminder, error) {
 }
 
 func MigrateReminderChatId(fromChatId int64, toChatId int64) error {
-	endpoint := fmt.Sprintf("%v/items/reminder", utils.DirectusHost)
+	endpoint := fmt.Sprintf("%v/items/reminderbot_reminder", utils.DirectusHost)
 	reqBody := []byte(fmt.Sprintf(`{
 		"query": {
 			"filter": {

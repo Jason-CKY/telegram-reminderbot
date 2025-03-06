@@ -48,7 +48,7 @@ def get_all_chat_ids(chat_collection):
 
 def insert_directus_chat_settings(chat_settings: ChatSettings):
     resp = requests.post(
-        f"{DIRECTUS_PUBLIC_URL}/items/chat_settings",
+        f"{DIRECTUS_PUBLIC_URL}/items/reminderbot_chat_settings",
         headers=request_headers,
         json=chat_settings.model_dump()
     )
@@ -57,7 +57,7 @@ def insert_directus_chat_settings(chat_settings: ChatSettings):
 
 def insert_reminder(reminder: Reminder):
     resp = requests.post(
-        f"{DIRECTUS_PUBLIC_URL}/items/reminder",
+        f"{DIRECTUS_PUBLIC_URL}/items/reminderbot_reminder",
         headers=request_headers,
         json=reminder.model_dump()
     )
