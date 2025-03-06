@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
 )
@@ -14,6 +15,43 @@ type ChatSettings struct {
 	ChatId   int64  `json:"chat_id"`
 	Timezone string `json:"timezone"`
 	Updating bool   `json:"updating"`
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (cs ChatSettings) MarshalJSON() ([]byte, error) {
+	type Alias ChatSettings // Prevent recursion
+
+	aux := &struct {
+		ChatId string `json:"chat_id"`
+		*Alias
+	}{
+		ChatId: strconv.FormatInt(cs.ChatId, 10),
+		Alias:  (*Alias)(&cs),
+	}
+	return json.Marshal(aux)
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (cs *ChatSettings) UnmarshalJSON(data []byte) error {
+	type Alias ChatSettings // Prevent recursion
+
+	aux := &struct {
+		ChatId string `json:"chat_id"`
+		*Alias
+	}{
+		Alias: (*Alias)(cs),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	chatId, err := strconv.ParseInt(aux.ChatId, 10, 64)
+	if err != nil {
+		return err
+	}
+	cs.ChatId = chatId
+	return nil
 }
 
 func (chatSettings ChatSettings) Create() error {

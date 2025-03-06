@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Jason-CKY/telegram-reminderbot/pkg/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type Reminder struct {
@@ -23,7 +24,54 @@ type Reminder struct {
 	Time            string `json:"time"`
 	ReminderText    string `json:"reminder_text"`
 	InConstruction  bool   `json:"in_construction"`
-	NextTriggerTime string `json:"next_trigger_time"`
+	NextTriggerTime string `json:"next_trigger_time,omitempty"`
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r Reminder) MarshalJSON() ([]byte, error) {
+	type Alias Reminder // Create an alias to avoid recursion
+
+	aux := &struct {
+		ChatId     string `json:"chat_id"`
+		FromUserId string `json:"from_user_id"`
+		*Alias
+	}{
+		ChatId:     strconv.FormatInt(r.ChatId, 10),
+		FromUserId: strconv.FormatInt(r.FromUserId, 10),
+		Alias:      (*Alias)(&r),
+	}
+	return json.Marshal(aux)
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (r *Reminder) UnmarshalJSON(data []byte) error {
+	type Alias Reminder // Create an alias to avoid recursion
+
+	aux := &struct {
+		ChatId     string `json:"chat_id"`
+		FromUserId string `json:"from_user_id"`
+		*Alias
+	}{
+		Alias: (*Alias)(r),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	chatId, err := strconv.ParseInt(aux.ChatId, 10, 64)
+	if err != nil {
+		return err
+	}
+	r.ChatId = chatId
+
+	fromUserId, err := strconv.ParseInt(aux.FromUserId, 10, 64)
+	if err != nil {
+		return err
+	}
+	r.FromUserId = fromUserId
+
+	return nil
 }
 
 func (reminder Reminder) Create() error {
@@ -373,6 +421,7 @@ func GetDueReminders() ([]Reminder, error) {
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
+	log.Debug(string(body))
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
 	// error handling for json unmarshaling
