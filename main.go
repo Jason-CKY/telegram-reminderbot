@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -39,6 +40,9 @@ func main() {
 	log.Infof("connecting to directus at: %v", utils.DirectusHost)
 
 	bot, err := tgbotapi.NewBotAPI(utils.BotToken)
+	if err != nil {
+		panic(fmt.Errorf("telegram connection error: %v", err))
+	}
 	bot.Debug = utils.LogLevel == "debug"
 	log.Infof("Authorized on account %s", bot.Self.UserName)
 
