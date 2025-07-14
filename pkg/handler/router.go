@@ -213,7 +213,7 @@ func HandleCommand(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSettings *
 			msg.Text = "There are no reminders in this chat."
 		} else {
 			listReminderText, listReminderMarkup, err := core.BuildListReminderTextAndMarkup(chatReminders, 1)
-			log.Info(listReminderText)
+			log.Debug(listReminderText)
 			if err != nil {
 				msg.Text = utils.NO_REMINDERS_MESSAGE
 			} else {

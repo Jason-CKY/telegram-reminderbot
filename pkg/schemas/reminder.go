@@ -309,7 +309,7 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
-	log.Info(string(body))
+	log.Debug(string(body))
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
 	// error handling for json unmarshaling
@@ -317,7 +317,7 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 		log.Error("Error unmarshaling reminder response: ", jsonErr)
 		return nil, jsonErr
 	}
-	log.Info(reminderResponse)
+	log.Debug(reminderResponse)
 
 	if len(reminderResponse["data"]) == 0 {
 		return nil, nil
