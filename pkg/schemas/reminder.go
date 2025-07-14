@@ -48,28 +48,47 @@ func (r *Reminder) UnmarshalJSON(data []byte) error {
 	type Alias Reminder // Create an alias to avoid recursion
 
 	aux := &struct {
-		ChatId     string `json:"chat_id"`
-		FromUserId string `json:"from_user_id"`
+		ChatId     interface{} `json:"chat_id"`
+		FromUserId interface{} `json:"from_user_id"`
 		*Alias
 	}{
 		Alias: (*Alias)(r),
 	}
 
 	if err := json.Unmarshal(data, &aux); err != nil {
+		log.Error("Error unmarshaling reminder: ", err)
 		return err
 	}
 
-	chatId, err := strconv.ParseInt(aux.ChatId, 10, 64)
-	if err != nil {
-		return err
+	// Handle chat_id as string or number
+	switch v := aux.ChatId.(type) {
+	case string:
+		chatId, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			log.Error("Error parsing chat_id: ", err)
+			return err
+		}
+		r.ChatId = chatId
+	case float64:
+		r.ChatId = int64(v)
+	default:
+		return fmt.Errorf("unexpected type for chat_id: %T", v)
 	}
-	r.ChatId = chatId
 
-	fromUserId, err := strconv.ParseInt(aux.FromUserId, 10, 64)
-	if err != nil {
-		return err
+	// Handle from_user_id as string or number
+	switch v := aux.FromUserId.(type) {
+	case string:
+		fromUserId, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			log.Error("Error parsing from_user_id: ", err)
+			return err
+		}
+		r.FromUserId = fromUserId
+	case float64:
+		r.FromUserId = int64(v)
+	default:
+		return fmt.Errorf("unexpected type for from_user_id: %T", v)
 	}
-	r.FromUserId = fromUserId
 
 	return nil
 }
@@ -290,12 +309,15 @@ func GetReminderInConstruction(chatId int64, fromUserId int64) (*Reminder, error
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
+	log.Info(string(body))
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
 	// error handling for json unmarshaling
 	if jsonErr != nil {
+		log.Error("Error unmarshaling reminder response: ", jsonErr)
 		return nil, jsonErr
 	}
+	log.Info(reminderResponse)
 
 	if len(reminderResponse["data"]) == 0 {
 		return nil, nil
