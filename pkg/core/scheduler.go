@@ -55,10 +55,10 @@ func TriggerReminder(reminder schemas.Reminder, bot *tgbotapi.BotAPI) {
 				tgbotapi.NewInlineKeyboardButtonData("Cancel", utils.RENEW_REMINDER_CANCEL),
 			),
 		)
-		if _, err := bot.Request(photo_msg); err != nil {
+		if res, err := bot.Request(photo_msg); err != nil {
 			log.Error(err)
 			// Check if user has blocked the bot (Forbidden error)
-			if strings.Contains(err.Error(), "forbidden") {
+			if res.ErrorCode == 403 {
 				log.Warnf("User %d has blocked the bot. Deleting reminder.", reminder.ChatId)
 				delErr := reminder.Delete()
 				if delErr != nil {
@@ -90,8 +90,16 @@ func TriggerReminder(reminder schemas.Reminder, bot *tgbotapi.BotAPI) {
 				tgbotapi.NewInlineKeyboardButtonData("Cancel", utils.RENEW_REMINDER_CANCEL),
 			),
 		)
-		if _, err := bot.Request(msg); err != nil {
-			log.Error(err)
+		if res, err := bot.Request(msg); err != nil {
+			// Check if user has blocked the bot (Forbidden error)
+			if res.ErrorCode == 403 {
+				log.Warnf("User %d has blocked the bot. Deleting reminder.", reminder.ChatId)
+				delErr := reminder.Delete()
+				if delErr != nil {
+					log.Error(delErr)
+				}
+				return
+			}
 			err = HandleErrorSendingReminder(reminder)
 			if err != nil {
 				log.Error(err)
