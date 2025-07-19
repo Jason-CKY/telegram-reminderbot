@@ -57,6 +57,15 @@ func TriggerReminder(reminder schemas.Reminder, bot *tgbotapi.BotAPI) {
 		)
 		if _, err := bot.Request(photo_msg); err != nil {
 			log.Error(err)
+			// Check if user has blocked the bot (Forbidden error)
+			if strings.Contains(err.Error(), "forbidden") {
+				log.Warnf("User %d has blocked the bot. Deleting reminder.", reminder.ChatId)
+				delErr := reminder.Delete()
+				if delErr != nil {
+					log.Error(delErr)
+				}
+				return
+			}
 			err = HandleErrorSendingReminder(reminder)
 			if err != nil {
 				log.Error(err)
@@ -103,7 +112,7 @@ func TriggerReminder(reminder schemas.Reminder, bot *tgbotapi.BotAPI) {
 			return
 		}
 	} else {
-		nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings)
+		nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings, true)
 		if err != nil {
 			log.Error(err)
 			return

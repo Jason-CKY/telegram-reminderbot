@@ -206,7 +206,7 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	return nil
 }
 
-func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (time.Time, error) {
+func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, reminderHasTriggered bool) (time.Time, error) {
 	// calculate the next trigger time, in the user's timezone
 	tz, _ := time.LoadLocation(chatSettings.Timezone)
 	frequencyText := strings.Split(reminder.Frequency, "-")
@@ -225,7 +225,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 		currentTime := time.Now().UTC()
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
 		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, tz).In(time.UTC)
-		if currentTime.After(triggerTime) {
+		if currentTime.After(triggerTime) || reminderHasTriggered {
 			return triggerTime.Add(24 * time.Hour), nil
 		}
 		return triggerTime, nil
@@ -237,7 +237,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 		for reminderWeekday != int(triggerTime.In(tz).Weekday()) {
 			triggerTime = triggerTime.Add(24 * time.Hour)
 		}
-		if currentTime.After(triggerTime) {
+		if currentTime.After(triggerTime) || reminderHasTriggered {
 			triggerTime = triggerTime.Add(7 * 24 * time.Hour)
 		}
 
@@ -248,7 +248,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
 		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), reminderDay, reminderHour, reminderMinute, 0, 0, tz)
 
-		if currentTime.After(triggerTime) {
+		if currentTime.After(triggerTime) || reminderHasTriggered {
 			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, tz).In(time.UTC), nil
 		}
 		return triggerTime.In(time.UTC), nil
@@ -259,7 +259,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (t
 		}
 		currentTime := time.Now().In(tz)
 		triggerTime := time.Date(currentTime.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz)
-		if currentTime.After(triggerTime) {
+		if currentTime.After(triggerTime) || reminderHasTriggered {
 			return time.Date(currentTime.Year()+1, t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz).In(time.UTC), nil
 		}
 		return triggerTime.In(time.UTC), nil
@@ -443,7 +443,7 @@ func GetDueReminders() ([]Reminder, error) {
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("error searching for reminder in directus: %v", string(body))
 	}
-	log.Debug(string(body))
+	// log.Debug(string(body))
 	var reminderResponse map[string][]Reminder
 	jsonErr := json.Unmarshal(body, &reminderResponse)
 	// error handling for json unmarshaling
