@@ -120,7 +120,7 @@ func TriggerReminder(reminder schemas.Reminder, bot *tgbotapi.BotAPI) {
 			return
 		}
 	} else {
-		nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings, true)
+		nextTriggerTime, err := reminder.CalculateNextTriggerTime(chatSettings)
 		if err != nil {
 			log.Error(err)
 			return

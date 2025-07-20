@@ -103,7 +103,7 @@ func (chatSettings ChatSettings) Update() error {
 		return err
 	}
 	for _, reminder := range reminders {
-		nextTriggerTime, err := reminder.CalculateNextTriggerTime(&chatSettings, false)
+		nextTriggerTime, err := reminder.CalculateNextTriggerTime(&chatSettings)
 		if err != nil {
 			return err
 		}

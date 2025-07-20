@@ -347,7 +347,7 @@ func HandleCallbackQuery(update *tgbotapi.Update, bot *tgbotapi.BotAPI, chatSett
 							)
 						}
 
-						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings, false)
+						nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 						if err != nil {
 							log.Error(err)
 							return

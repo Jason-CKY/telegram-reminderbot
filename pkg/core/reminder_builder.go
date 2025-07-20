@@ -109,7 +109,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 			}
 		case utils.REMINDER_DAILY:
 			reminderInConstruction.Frequency = update.Message.Text
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings, false)
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return
@@ -218,7 +218,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 		val, ok := utils.DAY_OF_WEEK[update.Message.Text]
 		if ok {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_WEEKLY, val)
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings, false)
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return
@@ -252,7 +252,7 @@ func BuildReminder(reminderInConstruction *schemas.Reminder, chatSettings *schem
 		}
 		if day_of_month >= 1 && day_of_month <= 31 {
 			reminderInConstruction.Frequency = fmt.Sprintf("%v-%v", utils.REMINDER_MONTHLY, day_of_month)
-			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings, false)
+			nextTriggerTime, err := reminderInConstruction.CalculateNextTriggerTime(chatSettings)
 			if err != nil {
 				log.Error(err)
 				return

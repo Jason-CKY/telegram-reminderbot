@@ -206,7 +206,7 @@ func (reminder Reminder) DeleteReminderInConstruction() error {
 	return nil
 }
 
-func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, reminderHasTriggered bool) (time.Time, error) {
+func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings) (time.Time, error) {
 	// calculate the next trigger time, in the user's timezone
 	tz, _ := time.LoadLocation(chatSettings.Timezone)
 	frequencyText := strings.Split(reminder.Frequency, "-")
@@ -222,10 +222,10 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, re
 		}
 		return triggerTime.In(time.UTC), nil
 	case frequency == utils.REMINDER_DAILY:
-		currentTime := time.Now().UTC()
+		currentTime := time.Now().In(tz)
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
 		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), reminderHour, reminderMinute, 0, 0, tz).In(time.UTC)
-		if currentTime.After(triggerTime) || reminderHasTriggered {
+		if currentTime.After(triggerTime) {
 			return triggerTime.Add(24 * time.Hour), nil
 		}
 		return triggerTime, nil
@@ -237,7 +237,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, re
 		for reminderWeekday != int(triggerTime.In(tz).Weekday()) {
 			triggerTime = triggerTime.Add(24 * time.Hour)
 		}
-		if currentTime.After(triggerTime) || reminderHasTriggered {
+		if currentTime.After(triggerTime) {
 			triggerTime = triggerTime.Add(7 * 24 * time.Hour)
 		}
 
@@ -248,7 +248,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, re
 		reminderHour, reminderMinute := utils.ParseReminderTime(reminder.Time)
 		triggerTime := time.Date(currentTime.Year(), currentTime.Month(), reminderDay, reminderHour, reminderMinute, 0, 0, tz)
 
-		if currentTime.After(triggerTime) || reminderHasTriggered {
+		if currentTime.After(triggerTime) {
 			return time.Date(currentTime.Year(), currentTime.Month()+1, reminderDay, reminderHour, reminderMinute, 0, 0, tz).In(time.UTC), nil
 		}
 		return triggerTime.In(time.UTC), nil
@@ -259,7 +259,7 @@ func (reminder Reminder) CalculateNextTriggerTime(chatSettings *ChatSettings, re
 		}
 		currentTime := time.Now().In(tz)
 		triggerTime := time.Date(currentTime.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz)
-		if currentTime.After(triggerTime) || reminderHasTriggered {
+		if currentTime.After(triggerTime) {
 			return time.Date(currentTime.Year()+1, t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, tz).In(time.UTC), nil
 		}
 		return triggerTime.In(time.UTC), nil
